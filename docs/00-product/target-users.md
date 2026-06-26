@@ -37,24 +37,27 @@ This document identifies the types of users the LMS is being designed for. User 
 - Views platform-wide analytics and reports
 - May manage courses, categories, or organizational structure
 
-### Organization Owner / Manager
+### Organization Manager
 
-> **Open Question:** Is this a distinct role or a variant of Administrator?
+- Represents the client organization (tenant) buying or deploying the platform
+- Manages the subscription, licensing, and student seat limits (assigned vs. available seats)
+- Registers or invites learners and instructors within their organization
+- Assigns courses to learners and monitors organizational learning reports
 
-- Manages a group of learners within an organization
-- Assigns courses to team members
-- Tracks team learning progress
-- May purchase or allocate course access
+### Learning Coordinator
+
+- Oversees specific course **cohorts** (especially for pre-designed, trainerless courses)
+- Has complete access to course content to assist learners
+- Facilitates the **course forum** and module forums to support cohort interaction, answer questions, and drive engagement
+- Monitors progress and completion metrics for their assigned cohort members
 
 ---
 
 ## Open Questions
 
-- Are there "guest" or "anonymous" users who can preview content?
-- Can a user hold multiple roles (e.g., an instructor who is also a learner)?
-- Will there be a "content creator" role distinct from "instructor"?
-- Are organization managers a day-one requirement or a later addition?
-- Will there be API consumers (developer/integration users)?
+- Should we support self-registration for learners where the Organization Manager only approves them?
+- Can a single user account hold multiple roles (e.g., an Instructor who is also enrolled as a Learner)?
+- Will there be a read-only Auditor role for external compliance reviewers?
 
 ---
 

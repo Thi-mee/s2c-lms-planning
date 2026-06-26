@@ -40,22 +40,21 @@ A **module** is a logical grouping of lessons within a course. It represents a c
 
 A **lesson** is a single unit of educational content within a module.
 
-- A lesson belongs to exactly one module
-- A lesson contains **content** (text, video, file, interactive element, etc.)
-- A lesson may have an associated **assessment**
-- Lessons are ordered within a module
-- A lesson may be marked as required or optional
+- A lesson belongs to exactly one module.
+- A lesson contains **content** (defined conceptually as extensible; MVP implements **Rich Text**, **Required Readings** [which can link to external sources], and **Lesson Notes**).
+- A lesson may have an associated **assessment** (practice or graded quiz).
+- Lessons are ordered within a module.
 
 ---
 
 ## Enrollment
 
-An **enrollment** represents a learner's registration in a course.
+An **enrollment** represents a learner's registration in a specific **cohort** of a course.
 
-- An enrollment links a **learner** to a **course**
-- An enrollment has a status: enrolled → in progress → completed → dropped
-- An enrollment tracks the learner's **progress** through the course
-- Enrollment may be self-initiated or assigned by an administrator/organization
+- An enrollment links a **learner** directly to a **cohort** (which in turn belongs to a **course**).
+- An enrollment has a status: enrolled → in progress → completed → dropped.
+- An enrollment tracks the learner's **progress** through the course associated with that cohort.
+- Enrollment is controlled by the host organization (constrained by seat licensing limits).
 
 ---
 
@@ -63,11 +62,9 @@ An **enrollment** represents a learner's registration in a course.
 
 **Progress** tracks a learner's advancement through course content.
 
-- Progress is tracked per lesson, per module, and per course
-- A lesson is either not started, in progress, or completed
-- Module progress is derived from lesson completion
-- Course progress is derived from module completion
-- Progress may include assessment scores
+- Progress is tracked per lesson, per module, and per course.
+- A lesson is marked completed when the learner finishes reading lesson content or successfully submits the associated quiz.
+- Course progress is derived from completion of required lessons and passing graded quizzes.
 
 ---
 
@@ -75,12 +72,21 @@ An **enrollment** represents a learner's registration in a course.
 
 An **assessment** evaluates a learner's understanding.
 
-> **Open Question:** See [Q8](../00-product/open-questions.md) — Will there be assessments?
+- The system supports two quiz types:
+  - **Practice Quiz:** Can be taken multiple times, does not affect course grade, used for self-evaluation.
+  - **Graded Quiz:** Has strict submission limits, affects course completion, produces a permanent grade.
+- Quizzes consist of multiple-choice, select-all, or true/false questions.
 
-- An assessment may be a quiz, assignment, or other exercise
-- An assessment is associated with a lesson, module, or course
-- An assessment produces a score or result
-- Assessments may be required for course completion
+---
+
+## Forum
+
+A **forum** is a communication space for questions and discussions.
+
+- Forums exist at two distinct scopes:
+  - **Course Forum:** A general discussion space for the entire course.
+  - **Module Forum:** A contextual discussion space focused specifically on the module's topic area.
+- Users (Learners, Instructors, Managers) can create threads, post replies, and link to specific lesson concepts.
 
 ---
 
@@ -88,36 +94,70 @@ An **assessment** evaluates a learner's understanding.
 
 A **certificate** is a credential issued upon course completion.
 
-> **Open Question:** See [Q9](../00-product/open-questions.md) — Will certificates be generated?
+- Automatically generated for a learner once course completion criteria (required lessons read + passing grade on graded quizzes) are met.
+- Includes details such as: course name, learner name, issue timestamp, and a unique cryptographic verification ID.
 
-- A certificate is issued to a learner for a specific course
-- A certificate may have a unique identifier for verification
-- Certificate issuance may depend on assessment scores or completion requirements
+---
+
+## Seat License
+
+A **seat license** defines the student capacity allowed on a self-hosted instance.
+
+- Set on a per-organization basis by a license key (yearly subscription).
+- The system checks active student counts before allowing new learner registrations.
+- Includes mechanisms for reporting active seat metrics back to s2c.
+
+---
+
+## Cohort
+
+A **cohort** is a structured group of learners taking a course on a synchronized schedule.
+
+- A cohort belongs to a specific course.
+- Learners are assigned to exactly one cohort per course enrollment.
+- Interaction between learners is scoped to their cohort, allowing for a shared pace and cohort-scoped discussions in forums.
+
+---
+
+## Learning Coordinator
+
+A **learning coordinator** is a staff role designated to facilitate learning experiences, especially in pre-designed, trainerless courses.
+
+- Assigned to oversee one or more course **cohorts**.
+- Has full view access to course materials.
+- Facilitates the **course forum** and module forums to answer questions, moderate topics, and manage group dynamics.
+- Monitors progress tracking data for their cohort members but does not create or edit course structures.
 
 ---
 
 ## Concept Relationships
 
 ```text
-Course
- └── Module
-      └── Lesson
-           └── Content
-           └── Assessment (optional)
+Organization (Seat License)
+ └── Course
+      ├── Course Forum (Cohort-scoped threads)
+      └── Module
+           ├── Module Forum
+           └── Lesson
+                ├── Lesson Notes
+                ├── Required Readings (External Links)
+                └── Assessment (Practice / Graded Quiz)
 
-Learner ──enrolls in──▸ Course
-         ──has──▸ Progress
-         ──earns──▸ Certificate
+Cohort (Assigned to Course)
+ ├── Learning Coordinator (Facilitates)
+ └── Enrollment (Ties Learner to Cohort)
+      ├── Progress (Lesson & Quiz status)
+      └── Certificate (Generated on completion)
 ```
 
 ---
 
 ## Open Questions
 
-- Should courses support branching or non-linear paths?
-- Can a lesson belong to multiple modules or courses (shared content)?
-- How is content versioning handled?
-- Are modules required, or can a course have a flat list of lessons?
+- Should we support lesson prerequisites (e.g., must finish Lesson 1 before opening Lesson 2)?
+- How long should quiz scores be preserved in the system logs?
+- Do forums support rich text and image attachment uploads?
+- How does the system handle learners deactivated to free up seats? Do they lose access to progress records?
 
 ---
 

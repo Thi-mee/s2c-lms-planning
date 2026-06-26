@@ -18,92 +18,114 @@ This is a **brainstorming document**, not a schema definition.
 ### User
 
 - Represents any person with an account on the platform
-- Has a role (or roles): Learner, Instructor, Administrator, Organization Manager
-- Has profile information, credentials, and preferences
+- Has a role: Learner, Learning Coordinator, Instructor, Administrator, Organization Manager
+- Links to an Organization (representing the tenant organization, e.g., s2c)
+
+### Organization
+
+- Represents the client tenant entity (e.g., s2c)
+- Holds fields for active seat capacity, license keys, subscription status, and expiration timestamps
 
 ### Course
 
 - The primary learning container
 - Has title, description, metadata, status (draft/published/archived)
-- Belongs to an instructor (or multiple instructors?)
+- Belongs to a single organization (tenant-scoped)
+- Has many cohorts (for hybrid/cohort-based learning)
 
 ### Module
 
 - A logical grouping within a course
-- Has a title, description, and ordering position
+- Has title, description, ordering position
 - Contains lessons
 
 ### Lesson
 
-- A single unit of content
-- Has a title, content (type varies), and ordering position
-- Belongs to a module
+- A single unit of learning
+- Has title, content type (Notes / Required Readings), ordering position
+- Fields: `lesson_notes` (Rich Text), `required_readings` (JSON array of external resource URLs and text descriptions)
+
+### Forum Thread
+
+- Represents a discussion topic created within a Course Forum or Module Forum
+- Fields: `id`, `title`, `scope` (Course vs. Module), `scope_id` (Course ID or Module ID), `author_id`, `created_at`
+
+### Forum Post
+
+- Represents a message/reply within a Forum Thread
+- Fields: `id`, `thread_id`, `parent_post_id` (for nested replies), `content` (Markdown), `author_id`, `created_at`
+
+### Quiz
+
+- Represents an assessment associated with a lesson
+- Fields: `id`, `lesson_id`, `title`, `type` (Practice vs. Graded), `passing_score_percentage`, `max_attempts` (null for practice)
+
+### Quiz Question
+
+- Represents a single question in a quiz
+- Fields: `id`, `quiz_id`, `type` (Single Choice, Multi-Select, True/False), `prompt_text`, `points`
+
+### Quiz Option
+
+- Represents an answer choice for a question
+- Fields: `id`, `question_id`, `option_text`, `is_correct` (boolean)
+
+### Quiz Submission
+
+- Tracks a learner's attempt at a quiz
+- Fields: `id`, `user_id`, `quiz_id`, `attempt_number`, `score_percentage`, `passed` (boolean), `submitted_at`
 
 ### Enrollment
 
-- Links a user (learner) to a course
-- Tracks enrollment status and dates
+- Links a learner (User) to a specific Cohort (which belongs to a Course)
+- Tracks enrollment status (enrolled, in progress, completed, dropped) and dates
+- Fields: `id`, `user_id`, `cohort_id` (references Cohort ID), `status`, `enrolled_at`
+
+### Cohort
+
+- Represents a synchronized learning group for a specific course
+- Fields: `id`, `course_id` (references Course ID), `title`, `coordinator_id` (references User ID of the Learning Coordinator), `start_date`, `end_date`, `created_at`
 
 ### Progress
 
-- Tracks a learner's completion of lessons, modules, and courses
-- May include time spent and scores
-
-### Assessment
-
-- An evaluation associated with a lesson, module, or course
-- Contains questions or tasks
-- Produces a result/score
-
-### Assessment Submission
-
-- A learner's submitted response to an assessment
-- Links to the assessment and the learner
-- Has a score and status (submitted, graded)
+- Tracks a learner's completion status per lesson
+- Fields: `id`, `user_id`, `lesson_id`, `completed` (boolean), `completed_at`
 
 ### Certificate
 
 - Issued upon course completion
-- Links to a learner and a course
-- Has a unique verification ID
-
-### Organization
-
-- A group of users managed together
-- Has members with assigned roles
-- May have assigned courses
-
-### Notification
-
-- A system-generated message to a user
-- Types: enrollment confirmation, course update, assessment result, etc.
-
-### Category / Tag
-
-- Used to organize and filter courses
+- Fields: `id`, `user_id`, `course_id`, `issue_date`, `verification_id` (unique cryptographic hash)
 
 ---
 
 ## Entity Relationship Overview (Draft)
 
 ```text
-User ──▸ Enrollment ──▸ Course
-User ──▸ Progress ──▸ Lesson
-User ──▸ Certificate ──▸ Course
-Course ──▸ Module ──▸ Lesson
-Lesson ──▸ Assessment
-User ──▸ Assessment Submission ──▸ Assessment
-User ──▸ Organization
+Organization (Licensing)
+ └── User (Learner / Coordinator / Instructor / Manager)
+ └── Course
+      ├── Cohort (Coordinator ID ↔ Cohort)
+      │    └── Enrollment (User ↔ Cohort)
+      ├── Forum Thread (Scope: Course vs. Module. Filtered by Cohort)
+      │    └── Forum Post (User replies)
+      └── Module
+           ├── Forum Thread (Module-scoped)
+           └── Lesson
+                ├── Progress (User ↔ Lesson)
+                └── Quiz
+                     └── Quiz Question
+                          └── Quiz Option
+                     └── Quiz Submission (User attempts)
+                          └── Certificate (issued on quiz completion/passing)
 ```
 
 ---
 
 ## Open Questions
 
-- Should "Content" be its own entity separate from Lesson?
-- Should the system support content reuse across courses?
-- Is there a "Course Template" entity for duplicating course structures?
-- How are media files (videos, documents) stored and referenced?
+- Should we store quiz submission answers in detail (question-by-question selections) for audit trails, or is the final score/grade sufficient?
+- Do we need a separate "Media Asset" entity to track image attachments posted in forums?
+- How are deactivated users handled in seat count aggregates (e.g., soft-delete vs. hard-delete)?
 
 ---
 

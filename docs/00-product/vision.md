@@ -7,50 +7,41 @@
 
 ## What We Are Building
 
-We are building a **Learning Management System (LMS)** — a platform that enables the creation, delivery, and management of educational content and learning experiences.
+We are building a **Learning Management System (LMS)** designed to be **self-hosted (white-labeled)** by organizations, starting with our own organization (**s2c**). It enables organizations to create, deliver, and manage educational courses, modules, and lessons, while tracking learner progress, hosting discussions, and evaluating performance.
 
-The exact product shape is still being defined. We are currently in the brainstorming and planning phase, exploring what the LMS should do, who it should serve, and how it should work.
+While the app defaults to single-tenant self-hosting, it uses an environment-based configuration design so the same codebase can be deployed in managed SaaS mode if required.
 
 ---
 
 ## Why We Are Building It
 
-> **Open Question:** The specific market gap or motivation driving this product has not yet been fully articulated. This section should be refined as the product direction becomes clearer.
+Existing LMS products are often over-engineered, expensive, or hard to deploy in a private, data-sovereign manner. By building a high-performance Go + React platform that compiles into a single binary, we allow organizations to manage their own data and infrastructure with absolute ease. 
 
-Initial motivations to explore:
-
-- Existing LMS products may be too complex, too rigid, or too expensive for our target audience
-- There may be an opportunity to build a more modern, flexible, or user-friendly learning platform
-- Specific organizational or community needs may require a tailored solution
+For monetization, we will control access using a yearly support fee combined with a seat-based license keyed to the number of active students created on the platform.
 
 ---
 
 ## Vision Statement
 
-> **Draft:** To be refined.
-
-Build a learning management system that makes it simple to create, deliver, and track structured learning experiences.
+Provide a high-performance, single-binary, extensible learning management system that empowers organizations to run their own education infrastructure, protect their data, and deliver modern e-learning without deployment overhead.
 
 ---
 
 ## What Success Looks Like
 
-> **Draft:** These are initial success indicators. They should be validated and refined.
-
-- Learners can discover and progress through courses with minimal friction
-- Instructors can create and manage course content efficiently
-- Administrators can oversee the platform and its users
-- Learning progress is tracked and visible to relevant stakeholders
-- The platform scales from small teams to larger organizations
+- **Self-Hosting Ease:** An organization can launch the LMS using a single compiled binary linked to a Postgres database.
+- **Licensing Control:** Organizations manage their active learner seat limits based on their yearly subscription tier.
+- **User Engagement:** Learners can consume content (Rich Text, Required Readings, and Lesson Notes), ask questions in Course and Module Forums, and take practice or graded quizzes.
+- **Tracking & Extensibility:** Instructors and admins can track learner progress. Content formats are structured for future domain expansions (e.g., video streaming or SCORM/xAPI integrations in later phases).
+- **Scale Confidence:** The application smoothly supports 1,000 to 10,000 active learners on baseline hardware, with an architecture designed to scale to 100,000.
 
 ---
 
 ## Open Questions
 
-- What is the primary differentiator compared to existing LMS products?
-- Is this a general-purpose LMS or tailored to a specific domain?
-- What is the initial target scale (10 users? 1,000? 100,000?)?
-- Is this a standalone product or part of a larger platform?
+- What is the specific VM image format (AMI, GCP image, etc.) we should prioritize first for simplified cloud deployments?
+- What are the precise seat tier thresholds for the yearly license (e.g., 500 seats, 1,000 seats, 5,000 seats)?
+- Should cohort-level analytics (e.g., cohort completion rates) be exposed to the Learning Coordinator, or just to Organization Managers?
 
 ---
 

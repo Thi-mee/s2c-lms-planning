@@ -13,33 +13,28 @@ This document captures the high-level goals for the LMS product. Goals should gu
 
 ## Primary Goals
 
-> **Draft:** To be validated and prioritized.
-
-1. **Enable structured learning** — Allow course creators to organize content into courses, modules, and lessons
-2. **Track learner progress** — Provide visibility into what learners have completed and how they are performing
-3. **Support multiple roles** — Serve learners, instructors, and administrators with role-appropriate experiences
-4. **Be easy to use** — Minimize complexity for all user types
-5. **Be extensible** — Design the platform so new capabilities can be added over time without major rework
+1. **Deployable Single-Binary Architecture** — Enable hosted organizations (starting with s2c) to set up and self-host the LMS using a single compiled binary linked to a Postgres database.
+2. **Flexible Seat-Based Licensing** — Provide gatekeeping mechanisms to check learner account creation limits based on yearly licensing tiers.
+3. **Structured & Extensible Learning** — Enable course creation with modules, lesson notes, and required readings with external links.
+4. **Knowledge Evaluation** — Offer graded and practice quizzes to assess learning outcomes.
+5. **Interactive Learning Communities** — Host course-level and module-level discussion forums to drive engagement.
+6. **Progress Tracking & Credentials** — Automatically track learner progress and issue digital certificates upon course completion.
 
 ---
 
-## Non-Goals (For Now)
+## Non-Goals (For MVP)
 
-> These are things we are explicitly **not** trying to do in the initial version. They may be revisited later.
-
-- Build a content marketplace
-- Support real-time live classroom video
-- Compete with enterprise LMS platforms on feature count
-- Build a mobile-native application (responsive web may suffice initially)
+- **SCORM or xAPI Integration** — Deferred to a future phase (detailed integration strategy planned).
+- **Payment Processing / Storefront** — No course selling or stripe integration for the MVP (focused on s2c internal learning).
+- **Live Classroom Video** — No live lectures or video conferencing (external links to meetings are acceptable).
+- **Mobile Native Apps** — The web interface will be fully responsive; native iOS/Android apps are deferred.
 
 ---
 
 ## Open Questions
 
-- Should "social learning" (discussion forums, peer interaction) be a goal?
-- Should "gamification" (badges, leaderboards, streaks) be a goal?
-- Is offline access a goal?
-- Should the platform support multi-tenancy (multiple organizations on one instance)?
+- Should the platform support cohort-based learning schedules (with open/close dates for modules)?
+- How much customization should we offer for generated certificates (e.g., custom HTML/CSS layouts)?
 
 ---
 

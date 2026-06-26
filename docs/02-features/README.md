@@ -22,32 +22,23 @@ This folder contains individual feature specification documents for the LMS. Eac
 
 ## Feature Index
 
-| Feature | Status | File |
-|---------|--------|------|
-| *(No features documented yet)* | — | — |
-
-Features will be added as the product definition matures.
+| Feature | Status | File | Description |
+|---------|--------|------|-------------|
+| User & Seat Provisioning | Draft | TBD | Manage active student accounts within seat limits |
+| Course & Module Administration | Draft | TBD | Manage course structures, modules, and ordering |
+| Rich Text & Reading Lessons | Draft | TBD | Author reading notes and link external references |
+| Quiz Engine | Draft | TBD | Create and take practice and graded quizzes |
+| Course & Module Forums | Draft | TBD | Post, reply, and coordinate discussion threads |
+| Completion & Certificate Generator | Draft | TBD | Auto-issue cryptographic certificates |
 
 ---
 
-## Potential Features to Document
+## Future Feature Backlog
 
-The following features are candidates for documentation. They have not been formally specified yet.
-
-- Course creation and management
-- Course browsing and discovery
-- Course enrollment
-- Lesson delivery (content consumption)
-- Progress tracking
-- Assessments (quizzes, assignments)
-- Certificate generation
-- User management
-- Role-based access control
-- Notifications
-- Reporting and analytics
-- Organization management
-- Search
-- Course reviews and ratings
+- **xAPI Integration Strategy:** Documented strategy for translating events to xAPI payloads.
+- **Paid Courses:** Stripe integration and custom shopping cart experience.
+- **Organization Tenant Provisioner:** SaaS model management for spinning up new organization domains.
+- **Video Storage & Streaming:** Transcoding pipelines and dynamic video player components.
 
 ---
 
