@@ -1,6 +1,7 @@
 using Variable.Identity;
 using Variable.Authoring;
 using Variable.Database;
+using Variable.Enrollment;
 using Xunit;
 
 namespace Variable.IntegrationTests;
@@ -41,6 +42,11 @@ public sealed class RolePolicyTests
         Assert.DoesNotContain(authoring.GetExportedTypes(), type => type.Name == "AuthoringService" || type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
         Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference => reference.Name == "Variable.Authoring");
         Assert.DoesNotContain(authoring.GetReferencedAssemblies(), reference => reference.Name == "Variable.App");
-        Assert.DoesNotContain(typeof(MigrationPlan).Assembly.GetReferencedAssemblies(), reference => reference.Name is "Variable.Identity" or "Variable.Authoring" or "Variable.App");
+        var enrollment = typeof(EnrollmentModule).Assembly;
+        Assert.DoesNotContain(enrollment.GetExportedTypes(), type => type.Name is "EnrollmentService" or "CohortAccessRemovalGuard" || type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(enrollment.GetReferencedAssemblies(), reference => reference.Name == "Variable.App");
+        Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference => reference.Name == "Variable.Enrollment");
+        Assert.DoesNotContain(authoring.GetReferencedAssemblies(), reference => reference.Name == "Variable.Enrollment");
+        Assert.DoesNotContain(typeof(MigrationPlan).Assembly.GetReferencedAssemblies(), reference => reference.Name is "Variable.Identity" or "Variable.Authoring" or "Variable.Enrollment" or "Variable.App");
     }
 }

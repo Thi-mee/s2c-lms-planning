@@ -9,3 +9,9 @@ public sealed record CreateCourse(Guid Id, string Title, string Description, Gui
 public sealed record SaveCourse(long ExpectedRevision, string Title, string Description, ModuleDraft[] Modules);
 public sealed record PublishCourse(long ExpectedRevision);
 public sealed record ChangeOwner(long ExpectedRevision, Guid OwnerId, string Reason);
+public sealed record PublishedCourseView(Guid Id, string Title);
+
+public interface IAuthoringAccess
+{
+    Task<PublishedCourseView?> FindPublishedCourseAsync(Variable.Identity.IdentityWork work, Guid courseId, CancellationToken ct);
+}

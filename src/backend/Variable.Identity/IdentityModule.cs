@@ -176,10 +176,29 @@ public static class IdentityModule
             if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
             return Results.NoContent();
         }).RequireAuthorization().RequireRateLimiting("security");
+        api.MapPost("/administration/users/{id:guid}/cohort-coordinator-role", async (Guid id, OrdinaryRoleRequest request,
+            IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.ChangeOrdinaryRoleAsync(context.User, id, AccountRole.CohortCoordinator, request.Granted, request.Reason,
+                request.CurrentPassword, context.RequestAborted);
+            if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting("security");
+        api.MapPost("/administration/users/{id:guid}/learning-facilitator-role", async (Guid id, OrdinaryRoleRequest request,
+            IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.ChangeOrdinaryRoleAsync(context.User, id, AccountRole.LearningFacilitator, request.Granted, request.Reason,
+                request.CurrentPassword, context.RequestAborted);
+            if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting("security");
         return endpoints;
     }
 
     private sealed record CourseAuthorRequest(bool Granted, string Reason, string? CurrentPassword = null);
+    private sealed record OrdinaryRoleRequest(bool Granted, string Reason, string? CurrentPassword = null);
     private sealed record LoginRequest(string Email, string Password);
     private sealed record AdministratorRequest(bool Granted, string CurrentPassword, string Reason);
     private sealed record DeactivationRequest(string Reason, string? CurrentPassword = null);

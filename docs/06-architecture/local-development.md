@@ -8,7 +8,7 @@
 
 The first [walking-skeleton slice](../07-roadmap/implementation-plan.md) establishes an organization and staff-only Administrator, authenticates through the React application, and persists revocable sessions and required audit in PostgreSQL. The identity module also exposes dedicated Administrator-role and deactivation commands for continuity and revocation testing. Their administration UI and ordinary role-management workflows come in later slices.
 
-The next slice adds Course Author membership management, an owned draft editor with ordered modules/plain-text lessons, and direct publication after content/required-lesson validation. Published content is read-only. Licensing, invitations, cohorts, learning progress, assessments and certificates are not implemented. Use synthetic development identities while the real-data and release gates remain open.
+The second slice adds Course Author membership management, an owned draft editor with ordered modules/plain-text lessons, and direct publication after content/required-lesson validation. The third implemented slice adds Coordinator/Facilitator eligibility, published-course cohort scheduling, atomic initial staffing and scoped staff views. Published content is read-only. Licensing, invitations, enrollment, learning progress, assessments and certificates are not implemented. Use synthetic development identities while the real-data and release gates remain open.
 
 ## Prerequisites and first run
 
@@ -46,7 +46,7 @@ For the browser check, stop any manually started host on 5078, then run the foll
 npm run test:e2e
 ```
 
-Playwright starts and stops its own backend host. It exercises the compiled React application in desktop and mobile Chromium, including rejected login, persistent session/logout, role changes, draft creation/editing, publication validation and safe plain-text rendering. Screenshots go to ignored `src/web/test-results/`; traces/video are disabled so credentials are not recorded. It requires the development bootstrap above. On Linux CI, the workflow installs Chromium's system dependencies too.
+Playwright starts and stops its own backend host. It exercises the compiled React application in desktop and mobile Chromium, including rejected login, persistent session/logout, role changes, draft creation/editing, publication validation, safe plain-text rendering and atomic staffed-cohort scheduling. Screenshots go to ignored `src/web/test-results/`; traces/video are disabled so credentials are not recorded. It requires the development bootstrap above. On Linux CI, the workflow installs Chromium's system dependencies too.
 
 The .NET suite uses real PostgreSQL. Each integration test creates a uniquely named `variable_test_<uuid>` database, applies the actual migration, and drops only that database during cleanup. It uses the development operator credentials to create fixtures; application requests use the restricted runtime role. Do not point this harness at a production database server. `VARIABLE_TEST_OPERATOR_CONNECTION` can relocate the isolated test server; it must provide the same synthetic migrator/runtime roles as [init-dev.sql](../../deploy/compose/init-dev.sql).
 
@@ -69,7 +69,7 @@ ASP.NET Core configuration uses `__` for environment-variable nesting. [scripts/
 | `Database__RuntimeRole` | `migrate` only; name to receive scoped table grants. |
 | `Bootstrap__OrganizationName`, `Bootstrap__AdministratorName`, `Bootstrap__Email`, `Bootstrap__PasswordFile` | Explicit one-time `bootstrap` command only. |
 
-Without a command the executable runs the host. `migrate` and `bootstrap` are explicit operator commands. Normal startup performs no DDL. The host composes Identity migration 1 and Authoring migration 2 through the small `Variable.Database` runner. Module-owned SQL remains embedded in its owning assembly. The `platform.schema_migrations` ledger records immutable SQL checksums, and one transaction-scoped PostgreSQL advisory lock covers the complete migration sequence. It rejects unknown schema versions or modified migration history. The runtime can insert/read audit but cannot update/delete it, cannot delete account/organization/bootstrap history, and cannot perform DDL. Organization UPDATE permission is needed for the security transaction's row lock. This protects against accidental runtime mutation; it is not tamper-proof evidence against a database operator.
+Without a command the executable runs the host. `migrate` and `bootstrap` are explicit operator commands. Normal startup performs no DDL. The host composes Identity migration 1, Authoring migration 2 and Enrollment migration 3 through the small `Variable.Database` runner. Module-owned SQL remains embedded in its owning assembly. The `platform.schema_migrations` ledger records immutable SQL checksums, and one transaction-scoped PostgreSQL advisory lock covers the complete migration sequence. It rejects unknown schema versions or modified migration history. The runtime can insert/read audit but cannot update/delete it, cannot delete account/organization/bootstrap history, and cannot perform DDL. Organization UPDATE permission is needed for the security transaction's row lock. This protects against accidental runtime mutation; it is not tamper-proof evidence against a database operator.
 
 `/health/live` reports process liveness; `/health/ready` checks database access, restricted role, the exact expected migration names/versions/checksums and installation binding. Authentication/API persistence failures fail closed with a redacted response. Invalid required configuration fails startup. JSON logs include correlation/request IDs; credentials, ticket contents and EF sensitive parameter logging are not enabled.
 
@@ -82,11 +82,11 @@ Without a command the executable runs the host. `migrate` and `bootstrap` are ex
 - Administrator changes require current-password reauthentication and a reason. The organization row lock serializes sensitive changes; an already-running request rechecks current authority inside that transaction. Temporary lockout, pending, deleted or credential-less accounts are not usable substitutes for final-Administrator removal.
 - Protected key-ring files and their encryption certificate/private key belong in backup coverage. Losing them invalidates protected sessions. Test/development keys are unencrypted on disk and must never be reused for customer installations.
 
-## Upgrade an existing foundation checkout
+## Upgrade an existing checkout
 
-Stop the local host before applying schema 2. Back up the database, preserve `.local/keys` and the local credential file, rebuild frontend/backend in the order above, then run `bash scripts/dev.sh migrate` and restart. Do not bootstrap again. The runner verifies the existing v1 checksum, applies only the missing v2 SQL, and preserves organization, accounts, sessions and audit. New runtime readiness rejects a database missing v2; the old runtime rejects a database containing v2. A failed migration transaction rolls back; do not delete ledger entries or alter an already-applied SQL file to force it through.
+Stop the local host before applying a missing schema. Back up the database, preserve `.local/keys` and the local credential file, rebuild frontend/backend in the order above, then run `bash scripts/dev.sh migrate` and restart. Do not bootstrap again. The runner verifies the existing checksum prefix and applies only missing migrations: v1→v2 preserves identity while adding Authoring; v2→v3 preserves identity/courses while adding Enrollment & Cohorts. New runtime readiness rejects a database missing v3; an old runtime rejects a database containing a newer migration. A failed migration transaction rolls back; do not delete ledger entries or alter an already-applied SQL file to force it through.
 
-For local database backup, create an ignored `.local/backups/` directory and use `docker compose -f deploy/compose/compose.dev.yml exec -T database pg_dump -U postgres -d variable_lms -Fc` redirected to a new, access-restricted file there. This pass saved `.local/backups/foundation-before-authoring.dump` before upgrading the development database. Customer backup/restore qualification remains a release gate.
+For local database backup, create an ignored `.local/backups/` directory and use `docker compose -f deploy/compose/compose.dev.yml exec -T database pg_dump -U postgres -d variable_lms -Fc` redirected to a new, access-restricted file there. This pass saved `.local/backups/authoring-before-enrollment.dump` before upgrading the development database to v3. Customer backup/restore qualification remains a release gate.
 
 ## Authoring defaults and limits
 
@@ -94,12 +94,18 @@ Use **Courses → New course**, select the owner, then add modules and lessons i
 
 Use **People** to grant/revoke Course Author on an existing active account. The affected account must sign in again. This workflow neither provisions accounts nor changes privileged memberships or learner seats. Course ownership and the account role stay distinct; [the API contract](../04-api-design/course-authoring.md) documents explicit ownership transfer and target protections. The ordinary bootstrap Administrator can author its own course without needing an additional role.
 
+## Cohort scheduling defaults and limits
+
+Use **People** to establish Cohort Coordinator or Learning Facilitator eligibility, then **Cohorts → New cohort** to select a published course, local display times and initial staff. The API converts schedule values to UTC and creates the cohort plus its Coordinator in one transaction. One account may hold both roles and both distinct grants. Resource assignment never adds the account role. Removing role/access or deactivating the final effective Coordinator of a non-ended cohort is rejected; required audit failure rolls back the change.
+
+The staff view is current-state only. No learner roster, Enrollment, cohort-start email, access-before/after-window rule, withdrawal, transfer or course-archive behavior is implemented. Those belong to later slices and Q69 where applicable. See the [cohort API contract](../04-api-design/cohort-scheduling.md).
+
 ## Limits and next work
 
 This slice has no password reset/recovery UI, audit viewer, invitation flow, generic user editor, licensing enforcement, job worker or customer deployment package. There is no path that activates/grants Learner, so zero-seat Administrator setup does not bypass an unimplemented capacity guard. Synthetic Learners exist only in tests.
 
-Expired session rows are denied immediately; automated deletion is not yet scheduled. Before customer release, add bounded cleanup, qualify key rotation/recovery and complete the release/real-data gates. The v1→v2 development upgrade is covered by integration tests; arbitrary downgrade and production restore are not qualified. Immutable OCI image publication, versioned production Compose packaging, TLS/backup/restore qualification and supported platform commitments remain in [slice 7](../07-roadmap/implementation-plan.md#7--expand-the-mvp-and-qualify-the-customer-release).
+Expired session rows are denied immediately; automated deletion is not yet scheduled. Before customer release, add bounded cleanup, qualify key rotation/recovery and complete the release/real-data gates. The v1→v2 and v2→v3 development upgrades are covered by integration tests; arbitrary downgrade and production restore are not qualified. Immutable OCI image publication, versioned production Compose packaging, TLS/backup/restore qualification and supported platform commitments remain in [slice 7](../07-roadmap/implementation-plan.md#7--expand-the-mvp-and-qualify-the-customer-release).
 
 ## Related documents
 
-[Authoring API](../04-api-design/course-authoring.md) · [Identity API](../04-api-design/identity-foundation.md) · [Security principles](security-and-identity.md) · [Release requirements](release-and-operations.md) · [Open questions](../00-product/open-questions.md)
+[Authoring API](../04-api-design/course-authoring.md) · [Cohort API](../04-api-design/cohort-scheduling.md) · [Identity API](../04-api-design/identity-foundation.md) · [Security principles](security-and-identity.md) · [Release requirements](release-and-operations.md) · [Open questions](../00-product/open-questions.md)

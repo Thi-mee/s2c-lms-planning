@@ -4,6 +4,7 @@
     <Project Path="src/backend/Variable.Identity/Variable.Identity.csproj" />
     <Project Path="src/backend/Variable.Authoring/Variable.Authoring.csproj" />
     <Project Path="src/backend/Variable.Database/Variable.Database.csproj" />
+    <Project Path="src/backend/Variable.Enrollment/Variable.Enrollment.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Variable.IntegrationTests/Variable.IntegrationTests.csproj" />

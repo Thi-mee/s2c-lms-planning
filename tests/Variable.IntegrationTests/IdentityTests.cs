@@ -268,7 +268,7 @@ public sealed partial class IdentityTests : IAsyncLifetime
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["ConnectionStrings:Migration"] = MigrationConnection, ["Database:RuntimeRole"] = "variable_runtime" }).Build();
         await Task.WhenAll(ApplicationMigrations.RunAsync(configuration), ApplicationMigrations.RunAsync(configuration));
-        Assert.Equal(2, await Count("SELECT count(*) FROM platform.schema_migrations"));
+        Assert.Equal(3, await Count("SELECT count(*) FROM platform.schema_migrations"));
         await Execute("UPDATE platform.schema_migrations SET sha256 = repeat('0', 64)");
         await Assert.ThrowsAsync<InvalidOperationException>(() => ApplicationMigrations.RunAsync(configuration));
     }

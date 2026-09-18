@@ -16,7 +16,9 @@ public static class AuthoringModule
         GRANT SELECT, INSERT, UPDATE, DELETE ON authoring.modules, authoring.lessons TO {runtime_role};
         """);
 
-    public static IServiceCollection AddVariableAuthoring(this IServiceCollection services) => services.AddScoped<AuthoringService>();
+    public static IServiceCollection AddVariableAuthoring(this IServiceCollection services) => services
+        .AddScoped<AuthoringService>()
+        .AddScoped<IAuthoringAccess, AuthoringAccess>();
 
     public static IEndpointRouteBuilder MapVariableAuthoring(this IEndpointRouteBuilder endpoints)
     {

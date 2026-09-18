@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Variable.Identity;
 using Variable.App;
 using Variable.Authoring;
+using Variable.Enrollment;
 
 var command = args.FirstOrDefault();
 var builder = WebApplication.CreateBuilder(command is "migrate" or "bootstrap" ? args[1..] : args);
@@ -26,6 +27,7 @@ if (args.FirstOrDefault() == "migrate")
 builder.Services.AddSingleton(ApplicationMigrations.Plan);
 builder.Services.AddVariableIdentity(builder.Configuration, builder.Environment);
 builder.Services.AddVariableAuthoring();
+builder.Services.AddVariableEnrollment();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -72,6 +74,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapVariableIdentity();
 app.MapVariableAuthoring();
+app.MapVariableEnrollment();
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/health") || context.Request.Method != "GET")
