@@ -1,4 +1,6 @@
 using Variable.Identity;
+using Variable.Authoring;
+using Variable.Database;
 using Xunit;
 
 namespace Variable.IntegrationTests;
@@ -35,5 +37,10 @@ public sealed class RolePolicyTests
         Assert.DoesNotContain(assembly.GetExportedTypes(), type => type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
         Assert.DoesNotContain(assembly.GetReferencedAssemblies(), referenced => referenced.Name == "Variable.App");
         Assert.All(assembly.GetTypes().Where(type => type.Name is "IdentityDb" or "IdentityService" or "UserAccount" or "PostgresTicketStore"), type => Assert.False(type.IsPublic));
+        var authoring = typeof(AuthoringModule).Assembly;
+        Assert.DoesNotContain(authoring.GetExportedTypes(), type => type.Name == "AuthoringService" || type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference => reference.Name == "Variable.Authoring");
+        Assert.DoesNotContain(authoring.GetReferencedAssemblies(), reference => reference.Name == "Variable.App");
+        Assert.DoesNotContain(typeof(MigrationPlan).Assembly.GetReferencedAssemblies(), reference => reference.Name is "Variable.Identity" or "Variable.Authoring" or "Variable.App");
     }
 }

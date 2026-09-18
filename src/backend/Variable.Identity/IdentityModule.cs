@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Variable.Identity.Persistence;
+using Variable.Database;
 
 namespace Variable.Identity;
 
@@ -29,6 +30,7 @@ public static class IdentityModule
         services.AddSingleton(TimeProvider.System);
         services.AddDbContext<IdentityDb>(options => options.UseNpgsql(installation.ConnectionString));
         services.AddScoped<IdentityService>();
+        services.AddScoped<IIdentityAccess, IdentityAccess>();
         services.AddScoped<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
         var protection = services.AddDataProtection().SetApplicationName("Variable.LMS")
             .PersistKeysToFileSystem(new DirectoryInfo(installation.KeyDirectory));
@@ -78,7 +80,13 @@ public static class IdentityModule
         return services;
     }
 
-    public static async Task RunMigrationAsync(IConfiguration configuration) => await DatabaseLifecycle.MigrateAsync(configuration);
+    public static ModuleMigration Migration => ModuleMigration.Embedded(typeof(IdentityModule).Assembly, 1, "0001-identity", "identity", """
+        GRANT USAGE ON SCHEMA identity TO {runtime_role};
+        REVOKE ALL ON ALL TABLES IN SCHEMA identity FROM {runtime_role};
+        GRANT SELECT, INSERT, UPDATE ON identity.organizations, identity.users TO {runtime_role};
+        GRANT SELECT, INSERT ON identity.installation, identity.audit_log TO {runtime_role};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON identity.sessions TO {runtime_role};
+        """);
 
     public static async Task RunBootstrapAsync(IServiceProvider services, string organizationName, string administratorName, string email, string password)
     {
@@ -88,7 +96,17 @@ public static class IdentityModule
 
     public static IApplicationBuilder UseVariableIdentityErrors(this IApplicationBuilder app) => app.Use(async (context, next) =>
     {
-        try { await next(); }
+        try
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.Headers.CacheControl = "no-store";
+                if (!await DatabaseLifecycle.ReadyAsync(context.RequestServices.GetRequiredService<InstallationOptions>(),
+                    context.RequestServices.GetRequiredService<MigrationPlan>(), context.RequestAborted))
+                { await WriteErrorAsync(context, 503, "database_not_ready"); return; }
+            }
+            await next();
+        }
         catch (IdentityFailure error) { await WriteErrorAsync(context, error.Status, error.Code); }
         catch (AntiforgeryValidationException) { await WriteErrorAsync(context, 400, "invalid_csrf_token"); }
         catch (Exception error) when (error is NpgsqlException or Microsoft.EntityFrameworkCore.DbUpdateException)
@@ -108,19 +126,13 @@ public static class IdentityModule
     public static IEndpointRouteBuilder MapVariableIdentity(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/health/live", () => Results.Ok(new { status = "alive" }));
-        endpoints.MapGet("/health/ready", async (InstallationOptions installation, CancellationToken ct) =>
+        endpoints.MapGet("/health/ready", async (InstallationOptions installation, MigrationPlan migrations, CancellationToken ct) =>
         {
-            try { return await DatabaseLifecycle.ReadyAsync(installation, ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503); }
+            try { return await DatabaseLifecycle.ReadyAsync(installation, migrations, ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503); }
             catch (NpgsqlException) { return Results.StatusCode(503); }
         });
 
-        var api = endpoints.MapGroup("/api").AddEndpointFilter(async (context, next) =>
-        {
-            context.HttpContext.Response.Headers.CacheControl = "no-store";
-            if (!await DatabaseLifecycle.ReadyAsync(context.HttpContext.RequestServices.GetRequiredService<InstallationOptions>(), context.HttpContext.RequestAborted))
-                return Results.Json(new { code = "database_not_ready" }, statusCode: 503);
-            return await next(context);
-        });
+        var api = endpoints.MapGroup("/api");
         api.MapGet("/auth/csrf", (IAntiforgery antiforgery, HttpContext context) =>
             Results.Ok(new { token = antiforgery.GetAndStoreTokens(context).RequestToken }));
         api.MapPost("/auth/login", async (LoginRequest request, IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
@@ -154,9 +166,20 @@ public static class IdentityModule
             if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
             return Results.NoContent();
         }).RequireAuthorization().RequireRateLimiting("security");
+        api.MapGet("/administration/users", async (string? search, IdentityService identity, HttpContext context) =>
+            Results.Ok(await identity.FindAccountsAsync(context.User, (search ?? "")[..Math.Min(search?.Length ?? 0, 320)], context.RequestAborted))).RequireAuthorization();
+        api.MapPost("/administration/users/{id:guid}/course-author-role", async (Guid id, CourseAuthorRequest request,
+            IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.ChangeCourseAuthorAsync(context.User, id, request.Granted, request.Reason, request.CurrentPassword, context.RequestAborted);
+            if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting("security");
         return endpoints;
     }
 
+    private sealed record CourseAuthorRequest(bool Granted, string Reason, string? CurrentPassword = null);
     private sealed record LoginRequest(string Email, string Password);
     private sealed record AdministratorRequest(bool Granted, string CurrentPassword, string Reason);
     private sealed record DeactivationRequest(string Reason, string? CurrentPassword = null);

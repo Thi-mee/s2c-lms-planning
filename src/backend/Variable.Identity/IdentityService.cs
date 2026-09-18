@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Variable.Identity.Persistence;
+using Variable.Database;
 
 namespace Variable.Identity;
 
@@ -22,7 +23,7 @@ internal static class IdentityClaims
     internal static long SecurityVersion(ClaimsPrincipal principal) => long.Parse(principal.FindFirstValue(Version)!, System.Globalization.CultureInfo.InvariantCulture);
 }
 
-internal sealed class IdentityService(IdentityDb db, InstallationOptions installation, IPasswordHasher<UserAccount> hasher, TimeProvider clock)
+internal sealed class IdentityService(IdentityDb db, InstallationOptions installation, IPasswordHasher<UserAccount> hasher, TimeProvider clock, MigrationPlan migrations)
 {
     internal async Task BootstrapAsync(string organizationName, string name, string email, string password, CancellationToken ct = default)
     {
@@ -30,7 +31,7 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
             || email.Length > 320 || !MailAddress.TryCreate(email, out var address) || address.Address != email
             || password.Length < 14 || password.Length > 128)
             throw new IdentityFailure("invalid_bootstrap_input", 400);
-        if (!await DatabaseLifecycle.ReadyAsync(installation, ct)) throw new IdentityFailure("database_not_ready", 503);
+        if (!await DatabaseLifecycle.ReadyAsync(installation, migrations, ct)) throw new IdentityFailure("database_not_ready", 503);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         // One installation, independent of the requested organization ID, even under concurrent commands.
         await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(817601002)", ct);
@@ -144,6 +145,34 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
         var before = target.Status;
         target.Status = "deactivated";
         await RecordSecurityChangeAsync(actor, target, "user.deactivated", new { before, after = target.Status, reason }, ct);
+        await transaction.CommitAsync(ct);
+    }
+
+    internal async Task<AccountView[]> FindAccountsAsync(ClaimsPrincipal principal, string search, CancellationToken ct)
+    {
+        var actor = await RequireActorAsync(principal, ct);
+        if (!actor.Administrator && !actor.Roles.Contains(nameof(AccountRole.OrganizationManager))) throw new IdentityFailure("forbidden", 403);
+        return (await db.Users.AsNoTracking().Where(x => x.OrganizationId == installation.OrganizationId && x.Status == "active" && x.DeletedAt == null
+            && x.NormalizedEmail.Contains(search.ToUpperInvariant())).OrderBy(x => x.NormalizedEmail).ThenBy(x => x.Id).Take(50).ToListAsync(ct)).Select(x => x.View()).ToArray();
+    }
+
+    internal async Task ChangeCourseAuthorAsync(ClaimsPrincipal principal, Guid targetId, bool grant, string reason, string? password, CancellationToken ct)
+    {
+        ValidateReason(reason);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        await LockOrganizationAsync(ct);
+        var actor = await RequireActorAsync(principal, ct);
+        var actorRoles = actor.Roles.Select(Enum.Parse<AccountRole>).ToArray();
+        if (!RoleGrantPolicy.CanGrantOrRevoke(actorRoles, AccountRole.CourseAuthor)) throw new IdentityFailure("forbidden", 403);
+        var target = await RequireTargetAsync(targetId, ct);
+        if (!actor.Administrator && target.Id != actor.Id && (target.Administrator || target.Roles.Contains(nameof(AccountRole.OrganizationManager))))
+            throw new IdentityFailure("forbidden", 403);
+        if (target.Administrator && target.Id != actor.Id) Reauthenticate(actor, password);
+        if (!target.Active) throw new IdentityFailure("account_not_active", 409);
+        if (target.Roles.Contains(nameof(AccountRole.CourseAuthor)) == grant) return;
+        var before = target.Roles;
+        target.Roles = grant ? [.. target.Roles, nameof(AccountRole.CourseAuthor)] : target.Roles.Where(x => x != nameof(AccountRole.CourseAuthor)).ToArray();
+        await RecordSecurityChangeAsync(actor, target, grant ? "course_author.granted" : "course_author.revoked", new { before, after = target.Roles, reason }, ct);
         await transaction.CommitAsync(ct);
     }
 

@@ -1,6 +1,6 @@
 # Variable LMS
 
-> **Status:** Identity foundation implemented; subsequent LMS slices planned\
+> **Status:** Identity and first course-publication path implemented\
 > **Last updated:** 2026-09-18
 
 ## Purpose
@@ -13,6 +13,7 @@ This repository is the living home of product truth, architectural decisions, im
 
 - [Documentation source map](docs/README.md) — precedence and task-specific reading routes.
 - [Run the application and tests](docs/06-architecture/local-development.md) — local setup, configuration and implemented scope.
+- [Course authoring HTTP contract](docs/04-api-design/course-authoring.md) — draft editing, publication and owner boundaries.
 - [Identity HTTP contract](docs/04-api-design/identity-foundation.md) — current endpoints and safeguards.
 - [Accepted decisions](docs/00-product/accepted-decisions.md) — the authoritative September baseline.
 - [MVP](docs/07-roadmap/mvp.md) — included and deferred product behavior.
@@ -26,13 +27,13 @@ This repository is the living home of product truth, architectural decisions, im
 
 ## Repository shape
 
-`docs/00-product` through `docs/08-research` hold specifications and decisions. `src/backend/` contains the ASP.NET Core host and private Identity module; `src/web/` is the React application. `tests/` contains PostgreSQL integration and architecture tests; browser tests live in `src/web/tests/`. `deploy/compose/` and `scripts/dev.sh` run the isolated development database and operator commands. `.github/workflows/ci.yml` builds and checks the foundation.
+`docs/00-product` through `docs/08-research` hold specifications and decisions. `src/backend/` contains the ASP.NET Core host and private Identity and Authoring modules; `src/web/` is the React application. `tests/` contains PostgreSQL integration and architecture tests; browser tests live in `src/web/tests/`. `deploy/compose/` and `scripts/dev.sh` run the isolated development database and operator commands. `.github/workflows/ci.yml` builds and checks the foundation.
 
 `public/` remains a derived documentation dossier, **not** the LMS frontend. Production OCI release packages are planned, not yet delivered. The license contract lives in `docs/04-api-design/`; a separate vendor control-plane repository will own issuance and billing.
 
 ## Implemented so far
 
-One-time organization/Administrator bootstrap, login/logout, persistent revocable sessions, organization isolation, dedicated Administrator grant/revoke and account deactivation commands, transactional audit, explicit locked migrations and a responsive authenticated shell. Course authoring is the next slice; licensing, invitations and learning workflows remain planned. This is a development foundation, not a customer-ready release.
+One-time organization/Administrator bootstrap, login/logout, persistent revocable sessions, organization isolation, dedicated Administrator grant/revoke and account deactivation commands, transactional audit, explicit locked migrations and a responsive authenticated shell. Owned drafts, ordered modules/plain-text lessons, publication validation and Course Author role management now work through the web application. Cohorts are next; licensing, invitations and learning workflows remain planned. This is a development foundation, not a customer-ready release.
 
 ## Contribution workflow
 

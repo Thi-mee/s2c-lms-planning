@@ -465,13 +465,27 @@
       "variable.app": {
         "type": "Project",
         "dependencies": {
+          "Variable.Authoring": "[1.0.0, )",
           "Variable.Identity": "[1.0.0, )"
+        }
+      },
+      "variable.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Variable.Identity": "[1.0.0, )"
+        }
+      },
+      "variable.database": {
+        "type": "Project",
+        "dependencies": {
+          "Npgsql": "[10.0.3, )"
         }
       },
       "variable.identity": {
         "type": "Project",
         "dependencies": {
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
+          "Variable.Database": "[1.0.0, )"
         }
       }
     }

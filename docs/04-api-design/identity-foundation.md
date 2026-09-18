@@ -45,4 +45,6 @@ No bootstrap HTTP route exists. The one-time operator command is in [local devel
 
 ## Validation and remaining scope
 
+The next slice implements account lookup and the narrow Course Author membership command, documented with [course authoring](course-authoring.md#role-management-addition). Other ordinary role grants, activation and invitations remain unimplemented until their own capacity/authorization paths are in place.
+
 [PostgreSQL integration tests](../../tests/Variable.IntegrationTests/IdentityTests.cs) cover negative authorization, organization isolation, CSRF, privilege races, rollback, migration locking and revocation/restart/expiry. [Browser tests](../../src/web/tests/authentication.spec.ts) exercise the compiled frontend. Ordinary roles, invitations, activation/reactivation, resource grants and password recovery receive contracts with their own slices and capacity checks. No gate in the [question register](../00-product/open-questions.md) is silently resolved by this contract.
