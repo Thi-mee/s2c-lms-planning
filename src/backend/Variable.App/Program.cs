@@ -5,6 +5,8 @@ using Variable.Identity;
 using Variable.App;
 using Variable.Authoring;
 using Variable.Enrollment;
+using Variable.Licensing;
+using Variable.Notifications;
 
 var command = args.FirstOrDefault();
 var builder = WebApplication.CreateBuilder(command is "migrate" or "bootstrap" ? args[1..] : args);
@@ -26,6 +28,8 @@ if (args.FirstOrDefault() == "migrate")
 
 builder.Services.AddSingleton(ApplicationMigrations.Plan);
 builder.Services.AddVariableIdentity(builder.Configuration, builder.Environment);
+builder.Services.AddVariableLicensing(builder.Configuration);
+builder.Services.AddVariableNotifications(builder.Configuration, builder.Environment);
 builder.Services.AddVariableAuthoring();
 builder.Services.AddVariableEnrollment();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -73,6 +77,7 @@ app.UseRateLimiter();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapVariableIdentity();
+app.MapVariableLicensing();
 app.MapVariableAuthoring();
 app.MapVariableEnrollment();
 app.MapFallback(async context =>

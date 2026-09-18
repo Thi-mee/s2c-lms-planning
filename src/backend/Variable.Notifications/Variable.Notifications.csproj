@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Variable.Identity/Variable.Identity.csproj" />
+    <EmbeddedResource Include="Persistence/Migrations/*.sql" />
+  </ItemGroup>
+</Project>

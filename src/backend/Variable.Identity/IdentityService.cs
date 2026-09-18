@@ -1,11 +1,14 @@
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Variable.Identity.Persistence;
 using Variable.Database;
+using Npgsql;
 
 namespace Variable.Identity;
 
@@ -25,7 +28,8 @@ internal static class IdentityClaims
 }
 
 internal sealed class IdentityService(IdentityDb db, InstallationOptions installation, IPasswordHasher<UserAccount> hasher, TimeProvider clock,
-    MigrationPlan migrations, IEnumerable<IAccountAccessRemovalGuard> removalGuards)
+    MigrationPlan migrations, IEnumerable<IAccountAccessRemovalGuard> removalGuards,
+    ILearnerCapacityPolicy learnerCapacity, IInvitationEmailWriter invitationEmail)
 {
     internal async Task BootstrapAsync(string organizationName, string name, string email, string password, CancellationToken ct = default)
     {
@@ -155,12 +159,147 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
         await transaction.CommitAsync(ct);
     }
 
-    internal async Task<AccountView[]> FindAccountsAsync(ClaimsPrincipal principal, string search, CancellationToken ct)
+    internal async Task<ProvisioningAccountView[]> FindAccountsAsync(ClaimsPrincipal principal, string search, CancellationToken ct)
     {
         var actor = await RequireActorAsync(principal, ct);
         if (!actor.Administrator && !actor.Roles.Contains(nameof(AccountRole.OrganizationManager))) throw new IdentityFailure("forbidden", 403);
-        return (await db.Users.AsNoTracking().Where(x => x.OrganizationId == installation.OrganizationId && x.Status == "active" && x.DeletedAt == null
-            && x.NormalizedEmail.Contains(search.ToUpperInvariant())).OrderBy(x => x.NormalizedEmail).ThenBy(x => x.Id).Take(50).ToListAsync(ct)).Select(x => x.View()).ToArray();
+        var users = await db.Users.AsNoTracking().Where(x => x.OrganizationId == installation.OrganizationId && x.DeletedAt == null
+            && x.NormalizedEmail.Contains(search.ToUpperInvariant())).OrderBy(x => x.NormalizedEmail).ThenBy(x => x.Id).Take(50).ToListAsync(ct);
+        var ids = users.Select(x => x.Id).ToArray();
+        var expiries = new Dictionary<Guid, DateTimeOffset>();
+        if (ids.Length > 0)
+        {
+            await using var connection = new NpgsqlConnection(installation.ConnectionString); await connection.OpenAsync(ct);
+            await using var command = new NpgsqlCommand("SELECT user_id,expires_at FROM identity.invitations WHERE organization_id=$1 AND user_id=ANY($2) AND used_at IS NULL", connection);
+            command.Parameters.AddWithValue(installation.OrganizationId); command.Parameters.AddWithValue(ids);
+            await using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) expiries[reader.GetGuid(0)] = reader.GetFieldValue<DateTimeOffset>(1);
+        }
+        return users.Select(x => new ProvisioningAccountView(x.Id, x.Name, x.Email, x.Status, x.Roles,
+            expiries.GetValueOrDefault(x.Id) is var expiry && expiry != default ? expiry : null)).ToArray();
+    }
+
+    internal async Task<InvitationView> InviteAsync(ClaimsPrincipal principal, InviteAccount request, CancellationToken ct)
+    {
+        if (request.RequestId == Guid.Empty || string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 200
+            || request.Email.Length > 320 || !MailAddress.TryCreate(request.Email, out var address) || address.Address != request.Email
+            || request.Roles.Length is < 1 or > 5 || request.Roles.Distinct().Count() != request.Roles.Length
+            || request.Roles.Any(x => !Enum.IsDefined(x) || x == AccountRole.Administrator))
+            throw new IdentityFailure("invalid_invitation", 400);
+        var normalized = request.Email.ToUpperInvariant();
+        var requestHash = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
+        { name = request.Name.Trim(), email = normalized, roles = request.Roles.Order().Select(x => x.ToString()).ToArray() })));
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        await LockOrganizationAsync(ct);
+        var actor = await RequireActorAsync(principal, ct);
+        var actorRoles = actor.Roles.Select(Enum.Parse<AccountRole>).ToArray();
+        if (request.Roles.Any(role => !RoleGrantPolicy.CanGrantOrRevoke(actorRoles, role))) throw new IdentityFailure("forbidden", 403);
+        var priorRequest = await InvitationByRequestAsync(request.RequestId, ct);
+        if (priorRequest is not null)
+        {
+            if (priorRequest.RequestHash != requestHash) throw new IdentityFailure("request_id_conflict", 409);
+            return new(priorRequest.UserId, "pending", priorRequest.ExpiresAt);
+        }
+        var user = await db.Users.SingleOrDefaultAsync(x => x.OrganizationId == installation.OrganizationId && x.NormalizedEmail == normalized, ct);
+        if (user is not null && user.Status != "pending") throw new IdentityFailure("account_already_exists", 409);
+        InvitationRow? existing = user is null ? null : await InvitationAsync(user.Id, true, ct);
+        if (existing is not null && existing.RequestId == request.RequestId)
+        {
+            if (existing.RequestHash != requestHash) throw new IdentityFailure("request_id_conflict", 409);
+            return new(user!.Id, "pending", existing.ExpiresAt);
+        }
+        if (request.Roles.Contains(AccountRole.Learner)) await RequireCapacityAsync(actor, transaction, 1, ct);
+        var now = clock.GetUtcNow(); var expires = now.AddHours(72); var version = (existing?.Version ?? 0) + 1;
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        var tokenHash = HashToken(token);
+        if (user is null)
+        {
+            user = new UserAccount { Id = Guid.NewGuid(), OrganizationId = installation.OrganizationId, Name = request.Name.Trim(),
+                Email = request.Email, NormalizedEmail = normalized, PasswordHash = "", Status = "pending",
+                Roles = request.Roles.Select(x => x.ToString()).ToArray(), CreatedAt = now, UpdatedAt = now };
+            db.Users.Add(user); await db.SaveChangesAsync(ct);
+        }
+        else
+        {
+            user.Name = request.Name.Trim(); user.Email = request.Email;
+            user.Roles = request.Roles.Select(x => x.ToString()).ToArray(); user.UpdatedAt = now;
+            await db.SaveChangesAsync(ct);
+        }
+        await using (var command = new NpgsqlCommand("""
+            INSERT INTO identity.invitations(organization_id,user_id,token_hash,expires_at,version,issued_by,request_id,request_hash,created_at,updated_at)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9)
+            ON CONFLICT (organization_id,user_id) DO UPDATE SET token_hash=excluded.token_hash,expires_at=excluded.expires_at,
+              used_at=NULL,version=excluded.version,issued_by=excluded.issued_by,request_id=excluded.request_id,
+              request_hash=excluded.request_hash,updated_at=excluded.updated_at
+            """, (NpgsqlConnection)db.Database.GetDbConnection(), (NpgsqlTransaction)transaction.GetDbTransaction()))
+        {
+            command.Parameters.AddWithValue(installation.OrganizationId); command.Parameters.AddWithValue(user.Id);
+            command.Parameters.AddWithValue(tokenHash); command.Parameters.AddWithValue(expires); command.Parameters.AddWithValue(version);
+            command.Parameters.AddWithValue(actor.Id); command.Parameters.AddWithValue(request.RequestId);
+            command.Parameters.AddWithValue(requestHash); command.Parameters.AddWithValue(now); await command.ExecuteNonQueryAsync(ct);
+        }
+        var organization = await db.Organizations.AsNoTracking().SingleAsync(x => x.Id == installation.OrganizationId, ct);
+        var context = new IdentityWriteContext(new(actor.View(), new(organization.Id, organization.Name)),
+            db.Database.GetDbConnection(), transaction.GetDbTransaction());
+        await invitationEmail.EnqueueAsync(context, user.Id, user.Email, token, expires, version, ct);
+        db.Audit.Add(new AuditEntry { OrganizationId = installation.OrganizationId, ActorUserId = actor.Id,
+            Action = existing is null ? "user.invited" : "invitation.resent", TargetId = user.Id,
+            Metadata = JsonSerializer.Serialize(new { roles = user.Roles, version }), CreatedAt = now });
+        await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
+        return new(user.Id, "pending", expires);
+    }
+
+    internal async Task AcceptInvitationAsync(string token, string password, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(token) || token.Length > 512 || password.Length is < 14 or > 128)
+            throw new IdentityFailure("invalid_invitation_token", 400);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct); await LockOrganizationAsync(ct);
+        var invitation = await InvitationByTokenAsync(HashToken(token), ct);
+        if (invitation is null || invitation.UsedAt is not null || invitation.ExpiresAt <= clock.GetUtcNow())
+            throw new IdentityFailure("invalid_invitation_token", 400);
+        var user = await RequireTargetAsync(invitation.UserId, ct);
+        if (user.Status != "pending") throw new IdentityFailure("invalid_invitation_token", 400);
+        var issuer = await RequireTargetAsync(invitation.IssuedBy, ct);
+        var issuerRoles = issuer.Roles.Select(Enum.Parse<AccountRole>).ToArray();
+        if (!issuer.Active || user.Roles.Select(Enum.Parse<AccountRole>).Any(role => role == AccountRole.Administrator
+            || !RoleGrantPolicy.CanGrantOrRevoke(issuerRoles, role))) throw new IdentityFailure("invitation_authority_revoked", 409);
+        if (user.Roles.Contains(nameof(AccountRole.Learner))) await RequireCapacityAsync(issuer, transaction, 1, ct);
+        user.PasswordHash = hasher.HashPassword(user, password); user.Status = "active"; user.SecurityVersion++;
+        var acceptedAt = clock.GetUtcNow(); user.UpdatedAt = acceptedAt;
+        await using (var command = new NpgsqlCommand("UPDATE identity.invitations SET used_at=$1,updated_at=$1 WHERE organization_id=$2 AND user_id=$3", (NpgsqlConnection)db.Database.GetDbConnection(), (NpgsqlTransaction)transaction.GetDbTransaction()))
+        { command.Parameters.AddWithValue(acceptedAt); command.Parameters.AddWithValue(installation.OrganizationId); command.Parameters.AddWithValue(user.Id); await command.ExecuteNonQueryAsync(ct); }
+        db.Audit.Add(new AuditEntry { OrganizationId = installation.OrganizationId, ActorKind = "system", Action = "invitation.accepted",
+            TargetId = user.Id, Metadata = JsonSerializer.Serialize(new { roles = user.Roles, invitation.Version }), CreatedAt = clock.GetUtcNow() });
+        await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
+    }
+
+    internal async Task ReactivateAsync(ClaimsPrincipal principal, Guid targetId, string reason, CancellationToken ct)
+    {
+        ValidateReason(reason); await using var transaction = await db.Database.BeginTransactionAsync(ct); await LockOrganizationAsync(ct);
+        var actor = await RequireActorAsync(principal, ct); var target = await RequireTargetAsync(targetId, ct);
+        if (!actor.Administrator && (!actor.Roles.Contains(nameof(AccountRole.OrganizationManager))
+            || target.Roles.Intersect([nameof(AccountRole.Administrator), nameof(AccountRole.OrganizationManager)]).Any()))
+            throw new IdentityFailure("forbidden", 403);
+        if (target.Status == "active") return;
+        if (target.Status != "deactivated" || string.IsNullOrEmpty(target.PasswordHash)) throw new IdentityFailure("account_not_reactivatable", 409);
+        if (target.Roles.Contains(nameof(AccountRole.Learner))) await RequireCapacityAsync(actor, transaction, 1, ct);
+        var before = target.Status; target.Status = "active";
+        await RecordSecurityChangeAsync(actor, target, "user.reactivated", new { before, after = target.Status, reason }, ct);
+        await transaction.CommitAsync(ct);
+    }
+
+    internal async Task RestoreAsync(ClaimsPrincipal principal, Guid targetId, string reason, CancellationToken ct)
+    {
+        ValidateReason(reason); await using var transaction = await db.Database.BeginTransactionAsync(ct); await LockOrganizationAsync(ct);
+        var actor = await RequireActorAsync(principal, ct); var target = await RequireTargetAsync(targetId, ct);
+        if (!actor.Administrator && (!actor.Roles.Contains(nameof(AccountRole.OrganizationManager))
+            || target.Roles.Intersect([nameof(AccountRole.Administrator), nameof(AccountRole.OrganizationManager)]).Any()))
+            throw new IdentityFailure("forbidden", 403);
+        if (target.DeletedAt is null) throw new IdentityFailure("account_not_restorable", 409);
+        if (target.Roles.Contains(nameof(AccountRole.Learner))) await RequireCapacityAsync(actor, transaction, 1, ct);
+        var deletedAt = target.DeletedAt; target.DeletedAt = null; target.Status = "active";
+        await RecordSecurityChangeAsync(actor, target, "user.restored", new { deletedAt, reason }, ct);
+        await transaction.CommitAsync(ct);
     }
 
     internal async Task ChangeCourseAuthorAsync(ClaimsPrincipal principal, Guid targetId, bool grant, string reason, string? password, CancellationToken ct)
@@ -169,7 +308,7 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
     internal async Task ChangeOrdinaryRoleAsync(ClaimsPrincipal principal, Guid targetId, AccountRole role, bool grant, string reason, string? password, CancellationToken ct)
     {
         ValidateReason(reason);
-        if (role is AccountRole.Administrator or AccountRole.OrganizationManager or AccountRole.Learner || !Enum.IsDefined(role))
+        if (role is AccountRole.Administrator or AccountRole.OrganizationManager || !Enum.IsDefined(role))
             throw new IdentityFailure("role_not_supported", 400);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         await LockOrganizationAsync(ct);
@@ -183,6 +322,7 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
         if (!target.Active) throw new IdentityFailure("account_not_active", 409);
         var roleName = role.ToString();
         if (target.Roles.Contains(roleName) == grant) return;
+        if (grant && role == AccountRole.Learner) await RequireCapacityAsync(actor, transaction, 1, ct);
         if (!grant)
         {
             var organization = await db.Organizations.AsNoTracking().SingleAsync(x => x.Id == installation.OrganizationId, ct);
@@ -198,6 +338,7 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
             AccountRole.CourseAuthor => "course_author",
             AccountRole.CohortCoordinator => "cohort_coordinator",
             AccountRole.LearningFacilitator => "learning_facilitator",
+            AccountRole.Learner => "learner",
             _ => throw new InvalidOperationException("Unsupported ordinary role.")
         };
         await RecordSecurityChangeAsync(actor, target, grant ? $"{action}.granted" : $"{action}.revoked", new { before, after = target.Roles, reason }, ct);
@@ -208,6 +349,50 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
     {
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM identity.organizations WHERE id = {installation.OrganizationId} FOR UPDATE", ct);
     }
+
+    private async Task RequireCapacityAsync(UserAccount actor, IDbContextTransaction transaction, int increase, CancellationToken ct)
+    {
+        var usage = await db.Users.CountAsync(x => x.OrganizationId == installation.OrganizationId && x.Status == "active"
+            && x.DeletedAt == null && x.Roles.Contains(nameof(AccountRole.Learner)), ct);
+        var organization = await db.Organizations.AsNoTracking().SingleAsync(x => x.Id == installation.OrganizationId, ct);
+        var context = new IdentityWriteContext(new(actor.View(), new(organization.Id, organization.Name)),
+            db.Database.GetDbConnection(), transaction.GetDbTransaction());
+        var decision = await learnerCapacity.ValidateIncreaseAsync(context, usage, increase, ct);
+        if (!decision.Allowed) throw new IdentityFailure(decision.Code!, 409);
+    }
+
+    private async Task<InvitationRow?> InvitationAsync(Guid userId, bool locked, CancellationToken ct)
+    {
+        var suffix = locked ? " FOR UPDATE" : "";
+        await using var command = new NpgsqlCommand("SELECT user_id,token_hash,expires_at,used_at,version,issued_by,request_id,request_hash FROM identity.invitations WHERE organization_id=$1 AND user_id=$2" + suffix,
+            (NpgsqlConnection)db.Database.GetDbConnection(), (NpgsqlTransaction?)db.Database.CurrentTransaction?.GetDbTransaction());
+        command.Parameters.AddWithValue(installation.OrganizationId); command.Parameters.AddWithValue(userId);
+        await using var reader = await command.ExecuteReaderAsync(ct); return await ReadInvitationAsync(reader, ct);
+    }
+
+    private async Task<InvitationRow?> InvitationByTokenAsync(string hash, CancellationToken ct)
+    {
+        await using var command = new NpgsqlCommand("SELECT user_id,token_hash,expires_at,used_at,version,issued_by,request_id,request_hash FROM identity.invitations WHERE organization_id=$1 AND token_hash=$2 FOR UPDATE",
+            (NpgsqlConnection)db.Database.GetDbConnection(), (NpgsqlTransaction?)db.Database.CurrentTransaction?.GetDbTransaction());
+        command.Parameters.AddWithValue(installation.OrganizationId); command.Parameters.AddWithValue(hash);
+        await using var reader = await command.ExecuteReaderAsync(ct); return await ReadInvitationAsync(reader, ct);
+    }
+
+    private async Task<InvitationRow?> InvitationByRequestAsync(Guid requestId, CancellationToken ct)
+    {
+        await using var command = new NpgsqlCommand("SELECT user_id,token_hash,expires_at,used_at,version,issued_by,request_id,request_hash FROM identity.invitations WHERE organization_id=$1 AND request_id=$2 FOR UPDATE",
+            (NpgsqlConnection)db.Database.GetDbConnection(), (NpgsqlTransaction?)db.Database.CurrentTransaction?.GetDbTransaction());
+        command.Parameters.AddWithValue(installation.OrganizationId); command.Parameters.AddWithValue(requestId);
+        await using var reader = await command.ExecuteReaderAsync(ct); return await ReadInvitationAsync(reader, ct);
+    }
+
+    private static async Task<InvitationRow?> ReadInvitationAsync(NpgsqlDataReader reader, CancellationToken ct) => await reader.ReadAsync(ct)
+        ? new(reader.GetGuid(0), reader.GetString(1), reader.GetFieldValue<DateTimeOffset>(2), reader.IsDBNull(3) ? null : reader.GetFieldValue<DateTimeOffset>(3),
+            reader.GetInt32(4), reader.GetGuid(5), reader.GetGuid(6), reader.GetString(7)) : null;
+
+    private static string HashToken(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+    private sealed record InvitationRow(Guid UserId, string TokenHash, DateTimeOffset ExpiresAt, DateTimeOffset? UsedAt,
+        int Version, Guid IssuedBy, Guid RequestId, string RequestHash);
 
     private async Task<UserAccount> RequireActorAsync(ClaimsPrincipal principal, CancellationToken ct)
     {

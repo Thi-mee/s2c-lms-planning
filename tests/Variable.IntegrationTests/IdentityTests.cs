@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Variable.Identity;
 using Variable.App;
+using Variable.Notifications;
 using Xunit;
 
 namespace Variable.IntegrationTests;
@@ -21,6 +23,8 @@ public sealed partial class IdentityTests : IAsyncLifetime
     private readonly Guid organization = Guid.NewGuid();
     private readonly string database = "variable_test_" + Guid.NewGuid().ToString("N");
     private readonly string keys = Path.Combine(Path.GetTempPath(), "variable-test-keys-" + Guid.NewGuid().ToString("N"));
+    private readonly string licensePublicKey = Path.Combine(Path.GetTempPath(), "variable-license-key-" + Guid.NewGuid().ToString("N") + ".pem");
+    private readonly ECDsa licenseIssuer = ECDsa.Create(ECCurve.NamedCurves.nistP256);
     private readonly TestClock clock = new();
     private readonly string operatorConnection = Environment.GetEnvironmentVariable("VARIABLE_TEST_OPERATOR_CONNECTION")
         ?? "Host=localhost;Port=54637;Database=postgres;Username=postgres;Password=variable-local-operator-only";
@@ -43,20 +47,23 @@ public sealed partial class IdentityTests : IAsyncLifetime
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["ConnectionStrings:Migration"] = MigrationConnection, ["Database:RuntimeRole"] = "variable_runtime" }).Build();
         await ApplicationMigrations.RunAsync(configuration);
+        await File.WriteAllTextAsync(licensePublicKey, licenseIssuer.ExportSubjectPublicKeyInfoPem());
         factory = CreateFactory();
     }
 
-    private WebApplicationFactory<Program> CreateFactory(string? runtime = null, Guid? configuredOrganization = null) => new IdentityFactory(new Dictionary<string, string?>
+    private WebApplicationFactory<Program> CreateFactory(string? runtime = null, Guid? configuredOrganization = null,
+        IEmailTransport? emailTransport = null) => new IdentityFactory(new Dictionary<string, string?>
         {
             [HostDefaults.EnvironmentKey] = "Testing",
             ["ConnectionStrings:Runtime"] = runtime ?? RuntimeConnection,
             ["ConnectionStrings:Migration"] = null,
             ["Installation:OrganizationId"] = (configuredOrganization ?? organization).ToString(),
             ["Installation:PublicOrigin"] = "https://localhost",
-            ["DataProtection:KeyDirectory"] = keys
-        }, clock);
+            ["DataProtection:KeyDirectory"] = keys,
+            ["Licensing:TrustedKeys:test-issuer"] = licensePublicKey
+        }, clock, emailTransport);
 
-    private sealed class IdentityFactory(Dictionary<string, string?> configuration, TimeProvider clock) : WebApplicationFactory<Program>
+    private sealed class IdentityFactory(Dictionary<string, string?> configuration, TimeProvider clock, IEmailTransport? emailTransport) : WebApplicationFactory<Program>
     {
         protected override IHost CreateHost(IHostBuilder builder)
         {
@@ -66,7 +73,15 @@ public sealed partial class IdentityTests : IAsyncLifetime
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-            builder.ConfigureServices(services => services.AddSingleton(clock));
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton(clock);
+                if (emailTransport is not null)
+                {
+                    var current = services.Single(x => x.ServiceType == typeof(IEmailTransport));
+                    services.Remove(current); services.AddSingleton(emailTransport);
+                }
+            });
     }
 
     public async Task DisposeAsync()
@@ -78,6 +93,8 @@ public sealed partial class IdentityTests : IAsyncLifetime
         await using var drop = new NpgsqlCommand($"DROP DATABASE {database} WITH (FORCE)", connection);
         await drop.ExecuteNonQueryAsync();
         if (Directory.Exists(keys)) Directory.Delete(keys, true);
+        if (File.Exists(licensePublicKey)) File.Delete(licensePublicKey);
+        licenseIssuer.Dispose();
     }
 
     private Task Bootstrap() => IdentityModule.RunBootstrapAsync(factory.Services, "Synthetic Training", "Test Administrator", Email, Password);
@@ -268,7 +285,7 @@ public sealed partial class IdentityTests : IAsyncLifetime
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["ConnectionStrings:Migration"] = MigrationConnection, ["Database:RuntimeRole"] = "variable_runtime" }).Build();
         await Task.WhenAll(ApplicationMigrations.RunAsync(configuration), ApplicationMigrations.RunAsync(configuration));
-        Assert.Equal(3, await Count("SELECT count(*) FROM platform.schema_migrations"));
+        Assert.Equal(7, await Count("SELECT count(*) FROM platform.schema_migrations"));
         await Execute("UPDATE platform.schema_migrations SET sha256 = repeat('0', 64)");
         await Assert.ThrowsAsync<InvalidOperationException>(() => ApplicationMigrations.RunAsync(configuration));
     }

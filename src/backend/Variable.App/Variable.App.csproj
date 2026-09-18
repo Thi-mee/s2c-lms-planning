@@ -3,5 +3,7 @@
     <ProjectReference Include="../Variable.Identity/Variable.Identity.csproj" />
     <ProjectReference Include="../Variable.Authoring/Variable.Authoring.csproj" />
     <ProjectReference Include="../Variable.Enrollment/Variable.Enrollment.csproj" />
+    <ProjectReference Include="../Variable.Licensing/Variable.Licensing.csproj" />
+    <ProjectReference Include="../Variable.Notifications/Variable.Notifications.csproj" />
   </ItemGroup>
 </Project>

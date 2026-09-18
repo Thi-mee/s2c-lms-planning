@@ -88,6 +88,14 @@ public static class IdentityModule
         GRANT SELECT, INSERT, UPDATE, DELETE ON identity.sessions TO {runtime_role};
         """);
 
+    public static ModuleMigration ProvisioningMigration => ModuleMigration.Embedded(typeof(IdentityModule).Assembly, 6, "0006-provisioning", "identity", """
+        GRANT SELECT, INSERT, UPDATE ON identity.invitations TO {runtime_role};
+        """);
+
+    public static ModuleMigration InvitationIdempotencyMigration => ModuleMigration.Embedded(typeof(IdentityModule).Assembly, 7, "0007-invitation-idempotency", "identity", """
+        GRANT SELECT, INSERT, UPDATE ON identity.invitations TO {runtime_role};
+        """);
+
     public static async Task RunBootstrapAsync(IServiceProvider services, string organizationName, string administratorName, string email, string password)
     {
         await using var scope = services.CreateAsyncScope();
@@ -150,6 +158,23 @@ public static class IdentityModule
             await context.SignOutAsync(IdentityClaims.Scheme);
             return Results.NoContent();
         }).RequireAuthorization();
+        api.MapPost("/invitations/accept", async (AcceptInvitationRequest request, IAntiforgery antiforgery,
+            IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.AcceptInvitationAsync(request.Token, request.Password, context.RequestAborted);
+            return Results.NoContent();
+        }).RequireRateLimiting("identity");
+        api.MapPost("/provisioning/invitations", async (InvitationRequest request, IAntiforgery antiforgery,
+            IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            var roles = new AccountRole[request.Roles.Length];
+            for (var index = 0; index < roles.Length; index++)
+                if (!Enum.TryParse(request.Roles[index], false, out roles[index])) throw new IdentityFailure("invalid_invitation", 400);
+            return Results.Ok(await identity.InviteAsync(context.User,
+                new(request.RequestId, request.Name, request.Email, roles), context.RequestAborted));
+        }).RequireAuthorization().RequireRateLimiting("security");
         api.MapPost("/administration/users/{id:guid}/administrator-role", async (Guid id, AdministratorRequest request,
             IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
         {
@@ -164,6 +189,20 @@ public static class IdentityModule
             await antiforgery.ValidateRequestAsync(context);
             await identity.DeactivateAsync(context.User, id, request.CurrentPassword, request.Reason, context.RequestAborted);
             if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting("security");
+        api.MapPost("/administration/users/{id:guid}/reactivate", async (Guid id, ReactivationRequest request,
+            IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.ReactivateAsync(context.User, id, request.Reason, context.RequestAborted);
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting("security");
+        api.MapPost("/administration/users/{id:guid}/restore", async (Guid id, ReactivationRequest request,
+            IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.RestoreAsync(context.User, id, request.Reason, context.RequestAborted);
             return Results.NoContent();
         }).RequireAuthorization().RequireRateLimiting("security");
         api.MapGet("/administration/users", async (string? search, IdentityService identity, HttpContext context) =>
@@ -194,6 +233,15 @@ public static class IdentityModule
             if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
             return Results.NoContent();
         }).RequireAuthorization().RequireRateLimiting("security");
+        api.MapPost("/administration/users/{id:guid}/learner-role", async (Guid id, OrdinaryRoleRequest request,
+            IAntiforgery antiforgery, IdentityService identity, HttpContext context) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await identity.ChangeOrdinaryRoleAsync(context.User, id, AccountRole.Learner, request.Granted, request.Reason,
+                request.CurrentPassword, context.RequestAborted);
+            if (id == IdentityClaims.UserId(context.User)) await context.SignOutAsync(IdentityClaims.Scheme);
+            return Results.NoContent();
+        }).RequireAuthorization().RequireRateLimiting("security");
         return endpoints;
     }
 
@@ -202,4 +250,7 @@ public static class IdentityModule
     private sealed record LoginRequest(string Email, string Password);
     private sealed record AdministratorRequest(bool Granted, string CurrentPassword, string Reason);
     private sealed record DeactivationRequest(string Reason, string? CurrentPassword = null);
+    private sealed record ReactivationRequest(string Reason);
+    private sealed record InvitationRequest(Guid RequestId, string Name, string Email, string[] Roles);
+    private sealed record AcceptInvitationRequest(string Token, string Password);
 }

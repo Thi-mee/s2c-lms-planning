@@ -204,7 +204,7 @@ public sealed partial class IdentityTests
     {
         // Reconstruct the empty later module areas to exercise the actual v1 upgrade path.
         await Bootstrap();
-        await Execute("DROP SCHEMA enrollment CASCADE; DROP SCHEMA authoring CASCADE; DELETE FROM platform.schema_migrations WHERE version>=2");
+        await Execute("DROP TABLE identity.invitations; DROP SCHEMA notifications CASCADE; DROP SCHEMA licensing CASCADE; DROP SCHEMA enrollment CASCADE; DROP SCHEMA authoring CASCADE; DELETE FROM platform.schema_migrations WHERE version>=2");
         var old = new MigrationPlan(IdentityModule.Migration);
         Assert.True(await old.ReadyAsync(RuntimeConnection));
         using var client = Client(); Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/health/ready")).StatusCode);

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Variable.Identity/Variable.Identity.csproj" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
+    <EmbeddedResource Include="Persistence/Migrations/*.sql" />
+  </ItemGroup>
+</Project>

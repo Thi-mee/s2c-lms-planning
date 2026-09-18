@@ -6,7 +6,7 @@
 
 ## Purpose and current contracts
 
-[License contract](license-contract.md) is the external LMS/issuer boundary. [Identity foundation](identity-foundation.md), [course authoring](course-authoring.md) and [cohort scheduling](cohort-scheduling.md) document the implemented HTTP slices. There is no generated OpenAPI yet. Define each further HTTP contract alongside its vertical slice using the [template](api-template.md); when OpenAPI is added, generate/validate it from the implementation rather than maintaining a divergent parallel API.
+[License contract](license-contract.md) is the external LMS/issuer boundary. [Identity foundation](identity-foundation.md), [course authoring](course-authoring.md), [cohort scheduling](cohort-scheduling.md) and [learner provisioning](learner-provisioning.md) document the implemented HTTP slices. There is no generated OpenAPI yet. Define each further HTTP contract alongside its vertical slice using the [template](api-template.md); when OpenAPI is added, generate/validate it from the implementation rather than maintaining a divergent parallel API.
 
 ## First-party API conventions
 

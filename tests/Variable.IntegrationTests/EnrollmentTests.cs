@@ -157,7 +157,7 @@ public sealed partial class IdentityTests
     public async Task Runtime_cannot_delete_cohort_history_and_v2_upgrade_preserves_existing_course()
     {
         await Bootstrap(); using var admin = Client(); await Login(admin); var course = await PublishedCourse(admin, await UserId(admin));
-        await Execute("DROP SCHEMA enrollment CASCADE; DELETE FROM platform.schema_migrations WHERE version=3");
+        await Execute("DROP TABLE identity.invitations; DROP SCHEMA notifications CASCADE; DROP SCHEMA licensing CASCADE; DROP SCHEMA enrollment CASCADE; DELETE FROM platform.schema_migrations WHERE version>=3");
         var old = new MigrationPlan(IdentityModule.Migration, AuthoringModule.Migration);
         Assert.True(await old.ReadyAsync(RuntimeConnection));
         await ApplicationMigrations.Plan.ApplyAsync(MigrationConnection, "variable_runtime");
