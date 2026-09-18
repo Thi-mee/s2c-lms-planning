@@ -2,7 +2,7 @@
 
 > **Status:** Confirmed\
 > **Authority:** Canonical — documentation operating model\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose
 
@@ -33,6 +33,7 @@ The [glossary](01-domain/glossary.md) owns terminology. The [question register](
 | Delivery, storage, recovery, configuration | release and operations | ADR-2, ADR-5, ADR-10; implementation plan |
 | API or UI slice | owning feature; roles and permissions | API README; navigation; templates |
 | Start implementation | readiness; implementation plan | relevant slice sources, not the full archive |
+| Run/build/test current code | [local development](06-architecture/local-development.md) | [identity HTTP contract](04-api-design/identity-foundation.md); owning module/tests |
 
 Section indexes provide clickable routes: [features](02-features/README.md), [entities](03-data-model/README.md), [APIs](04-api-design/README.md), [frontend](05-frontend/README.md), [architecture](06-architecture/README.md), [roadmap](07-roadmap/README.md).
 

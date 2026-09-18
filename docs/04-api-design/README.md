@@ -2,11 +2,11 @@
 
 > **Status:** Confirmed engineering baseline; endpoint contracts will be added per implementation slice\
 > **Authority:** Supporting conventions; feature behavior and role policy remain canonical\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose and current contracts
 
-[License contract](license-contract.md) is the external LMS/issuer boundary. The application API has no implemented endpoints or generated OpenAPI yet. Define each HTTP contract alongside its first vertical slice using the [template](api-template.md), then generate/validate OpenAPI from the implementation rather than maintaining a divergent parallel API.
+[License contract](license-contract.md) is the external LMS/issuer boundary. [Identity foundation](identity-foundation.md) documents the first implemented HTTP slice. There is no generated OpenAPI yet. Define each further HTTP contract alongside its vertical slice using the [template](api-template.md); when OpenAPI is added, generate/validate it from the implementation rather than maintaining a divergent parallel API.
 
 ## First-party API conventions
 

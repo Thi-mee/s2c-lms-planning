@@ -1,0 +1,16 @@
+.idea
+
+.DS_Store
+**/bin/
+**/obj/
+**/node_modules/
+**/wwwroot/
+**/dist/
+**/test-results/
+**/playwright-report/
+.local/
+.env
+.env.*
+!.env.example
+*.user
+*.suo

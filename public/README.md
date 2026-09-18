@@ -1,6 +1,6 @@
 # Variable LMS product dossier
 
-> **Status:** Reviewed 2026-09-17\
+> **Status:** Reviewed 2026-09-18\
 > **Authority:** Derived documentation; never overrides canonical repository specifications
 
 ## Purpose

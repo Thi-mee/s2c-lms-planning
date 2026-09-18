@@ -17,7 +17,7 @@ Use [implementation invariants](docs/06-architecture/implementation-invariants.m
 
 ## Scope and implementation
 
-This is the living product/implementation repository. Implement application code, tests, and deployment artifacts only when the current task authorizes implementation. The 2026-09-17 consolidation establishes documentation, not runnable product code. A modular monolith does not justify speculative services, brokers, mandatory Redis, or Kubernetes dependencies.
+This is the living product/implementation repository. Implement application code, tests, and deployment artifacts within the current task's authorized scope. Current executable scope, build/test commands and local configuration live in [local development](docs/06-architecture/local-development.md). A modular monolith does not justify speculative services, brokers, mandatory Redis, or Kubernetes dependencies.
 
 ## Change and validate
 

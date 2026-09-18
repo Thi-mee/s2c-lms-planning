@@ -6,6 +6,8 @@
 
 ## Finding
 
+**Assessment scope:** This report records the documentation consolidation committed as `1a3b3b9`. Implementation began afterward. See the [implementation plan](implementation-plan.md) and [local guide](../06-architecture/local-development.md) for current executable scope and checks; the consolidation-only validation record below remains historical evidence.
+
 **Foundational implementation can safely begin.** Stack, distribution boundary, privilege delegation, learner-seat accounting and learning-run identity are settled. No genuine foundational blocker remains. This is not a claim that every feature is fully specified, that an application exists, or that production readiness has been demonstrated.
 
 The repository now represents **Variable LMS**, a product of **Variable** initially serving **s2c's internal training**. No application features, migrations, package manifests, containers or CI configuration were implemented in this consolidation.

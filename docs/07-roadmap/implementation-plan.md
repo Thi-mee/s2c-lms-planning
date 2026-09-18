@@ -1,12 +1,12 @@
 # First implementation sequence
 
-> **Status:** Ready to begin foundations; product gates must close before affected behavior\
+> **Status:** Slice 0 implemented; later slices and their product gates remain\
 > **Authority:** Supporting implementation plan\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose and execution rule
 
-Build a narrow, end-to-end walking skeleton across real module contracts, PostgreSQL and React/ASP.NET Core. Expand each working slice with its behavior tests. Do not build every entity, then every API, then every screen. This document is a plan; this consolidation implements none of it.
+Build a narrow, end-to-end walking skeleton across real module contracts, PostgreSQL and React/ASP.NET Core. Expand each working slice with its behavior tests. Do not build every entity, then every API, then every screen. The original consolidation was documentation-only; execution status is recorded per slice below.
 
 Use the [source map](../README.md), owning feature and [invariants](../06-architecture/implementation-invariants.md) for each slice. A gated product behavior remains unimplemented until resolved; use clearly labelled synthetic fixtures for development, never ship a guessed policy as a default. Engineering choices listed in the [question register](../00-product/open-questions.md#engineering-decisions--team-may-proceed) do not require a product meeting.
 
@@ -27,6 +27,10 @@ flowchart TD
 The first complete path uses one course, one active cohort, one required text lesson and one single-choice graded quiz. It need not include forums, every question type, transfer, administrative certificate reissue or a second deployment platform. Decisions necessary even for that thin path (notably Q70 and Q72) must be closed before those steps.
 
 ## 0 — Establish organization, Administrator and authenticated shell
+
+**Implemented 2026-09-18:** Host and private Identity module, controlled bootstrap, restricted PostgreSQL runtime, explicit locked migration command, protected persistent sessions, security commands/transactional audit and React account shell. The [local guide](../06-architecture/local-development.md) owns run/test commands and concrete defaults; the [HTTP contract](../04-api-design/identity-foundation.md) owns current API scope. Backend negative, concurrency, rollback, restart and database-permission checks pass. A minimal CI workflow and development Compose database are included. This does not complete the customer-release qualifications in slice 7.
+
+**Validation:** 54 backend tests pass (including 16 PostgreSQL integration scenarios); all four desktop/mobile Chromium checks pass. Frontend production build, locked NuGet restore, shell syntax and 918 local documentation references pass. The CI workflow is authored; these are local results, not a claim that hosted CI has run. Production TLS/key-rotation/restore and customer packaging qualification remain in slice 7.
 
 **Deliver:** Minimal .NET 10 host, React/Vite shell, module/contract boundaries, PostgreSQL connection and initial module-owned migrations, explicit migration command, restricted runtime role, persistent protected key ring, controlled one-time bootstrap and staff-only Administrator login/logout. Include current-state cookie ticket validation, policy entrypoints, CSRF, configuration validation, health/readiness, structured redacted logging and transactional audit. Start a minimal build/test pipeline and development Compose environment when implementation is authorized.
 

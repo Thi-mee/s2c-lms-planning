@@ -2,7 +2,7 @@
 
 > **Status:** Implementation baseline established\
 > **Authority:** Supporting index\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose and reading routes
 
@@ -16,6 +16,7 @@ Use the [source map](../README.md) for precedence. Read the applicable ADR, then
 | [Release and operations](release-and-operations.md) | Versioned distribution, upgrades, backup/restore, files, configuration and observability |
 | [Implementation invariants](implementation-invariants.md) | Enforceable constraints and verification obligations |
 | [Principles](architecture-principles.md) | Architectural judgment |
+| [Local development](local-development.md) | Run the implemented slice, tests, configuration and concrete engineering defaults |
 
 ## Open questions
 
