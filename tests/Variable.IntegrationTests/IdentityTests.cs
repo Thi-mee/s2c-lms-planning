@@ -9,11 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Variable.Identity;
+using Variable.App;
 using Xunit;
 
 namespace Variable.IntegrationTests;
 
-public sealed class IdentityTests : IAsyncLifetime
+public sealed partial class IdentityTests : IAsyncLifetime
 {
     private const string Password = "Synthetic-test-password-726!";
     private const string Email = "administrator@example.test";
@@ -41,7 +42,7 @@ public sealed class IdentityTests : IAsyncLifetime
         }
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["ConnectionStrings:Migration"] = MigrationConnection, ["Database:RuntimeRole"] = "variable_runtime" }).Build();
-        await IdentityModule.RunMigrationAsync(configuration);
+        await ApplicationMigrations.RunAsync(configuration);
         factory = CreateFactory();
     }
 
@@ -235,7 +236,7 @@ public sealed class IdentityTests : IAsyncLifetime
             var error = await Assert.ThrowsAsync<PostgresException>(() => query.ExecuteNonQueryAsync()); Assert.Equal("42501", error.SqlState);
         }
         using var client = Client(); Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/ready")).StatusCode);
-        await Execute("UPDATE platform.schema_migrations SET version = 999");
+        await Execute("UPDATE platform.schema_migrations SET version = 999 WHERE version = 2");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/health/ready")).StatusCode);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/api/auth/csrf")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/live")).StatusCode);
@@ -266,10 +267,10 @@ public sealed class IdentityTests : IAsyncLifetime
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["ConnectionStrings:Migration"] = MigrationConnection, ["Database:RuntimeRole"] = "variable_runtime" }).Build();
-        await Task.WhenAll(IdentityModule.RunMigrationAsync(configuration), IdentityModule.RunMigrationAsync(configuration));
-        Assert.Equal(1, await Count("SELECT count(*) FROM platform.schema_migrations"));
+        await Task.WhenAll(ApplicationMigrations.RunAsync(configuration), ApplicationMigrations.RunAsync(configuration));
+        Assert.Equal(2, await Count("SELECT count(*) FROM platform.schema_migrations"));
         await Execute("UPDATE platform.schema_migrations SET sha256 = repeat('0', 64)");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => IdentityModule.RunMigrationAsync(configuration));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ApplicationMigrations.RunAsync(configuration));
     }
 
     [Fact]

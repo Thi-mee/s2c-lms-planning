@@ -31,7 +31,7 @@ The [glossary](01-domain/glossary.md) owns terminology. The [question register](
 | Licensing | license contract; ADR-3 and ADR-12 | provisioning; Organization |
 | Architecture, persistence, background work | ADR log; module boundaries | implementation invariants; security and identity |
 | Delivery, storage, recovery, configuration | release and operations | ADR-2, ADR-5, ADR-10; implementation plan |
-| API or UI slice | owning feature; roles and permissions | API README; navigation; templates |
+| API or UI slice | owning feature; roles and permissions | API README; [current authoring contract](04-api-design/course-authoring.md); navigation; templates |
 | Start implementation | readiness; implementation plan | relevant slice sources, not the full archive |
 | Run/build/test current code | [local development](06-architecture/local-development.md) | [identity HTTP contract](04-api-design/identity-foundation.md); owning module/tests |
 

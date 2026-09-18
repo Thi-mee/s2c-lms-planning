@@ -1,6 +1,6 @@
 # First implementation sequence
 
-> **Status:** Slice 0 implemented; later slices and their product gates remain\
+> **Status:** Slices 0 and 1 implemented; later slices and their product gates remain\
 > **Authority:** Supporting implementation plan\
 > **Updated:** 2026-09-18
 
@@ -39,6 +39,10 @@ The first complete path uses one course, one active cohort, one required text le
 **Dependencies/gates:** No foundational product blocker. Select concrete libraries/test tools as engineering work; use synthetic identities until Q57 is resolved for real data.
 
 ## 1 — Create and publish one course through the web application
+
+**Implemented 2026-09-18:** Course Author membership UI/API; private Authoring module and migration 2; create/assign owner, save ordered draft modules/plain-text lessons, publication validation and read-only published content. Explicit ownership transfer is available through its API; its dedicated UI remains follow-up work. Required audit shares Identity's local transaction and security-write guard. The [authoring contract](../04-api-design/course-authoring.md) records the actual endpoint scope, bounds, retries and concurrency behavior. Rich text/reading links and live editing are not claimed complete by this thin slice.
+
+**Validation:** 66 backend tests pass (28 real-PostgreSQL integration scenarios and 38 role/architecture cases); all eight desktop/mobile Chromium checks pass. Frontend build, locked dependency restore, unchanged migration 1 and 936 local documentation references were checked. The local development database was backed up and upgraded from v1 to v2 without re-bootstrap. Hosted CI and production recovery qualification remain separate from these local checks.
 
 **Deliver:** Administrator grants/assigns Course Author using the explicit policy; author creates a draft, owner grant, one module, one required text lesson and its publication validation. React form → API → owner module → database is exercised now. No general-purpose CRUD for every entity.
 

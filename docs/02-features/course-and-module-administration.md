@@ -3,13 +3,15 @@
 > **Status:** Confirmed baseline; linked feature-local questions remain open\
 > **Authority:** Canonical feature specification\
 > **Owner:** Course Authoring\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose and users
 
 Course Authors and Administrators organize and publish text-based training. Each course has one organization and one owning account (Course Author or Administrator) for MVP.
 
 ## Goal and non-goals
+
+**Implementation status (2026-09-18):** The first-publication path is implemented: owned draft, ordered modules/plain-text lessons, required flags, save/version conflict, publication and read-only published content. Explicit ownership transfer has an API. Rich text/reading links, transfer UI, archive flows and live editing remain outside this completed thin slice. See [current HTTP contract](../04-api-design/course-authoring.md); this status does not reduce the MVP's remaining requirements.
 
 Create a draft course, order modules and lessons, publish directly, and retain historical records when content is retired. No approval queue, collaborator editing, public course catalog or self-enrollment is included.
 

@@ -2,7 +2,7 @@
 
 > **Status:** Confirmed baseline\
 > **Authority:** Canonical — elaborates ADR-6 and ADR-13\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose
 
@@ -44,6 +44,8 @@ Efficient joins are allowed in **explicit read-only integration queries**: for e
 Change owners review integration-query dependencies when changing columns. An extraction later must replace local queries with an appropriate contract/projection; that cost is deliberate, not proof that all joins should be prohibited now.
 
 ## Transactions and durable work
+
+**Current concrete seam (2026-09-18):** Authoring depends on Identity's public `IIdentityAccess`/`IdentityWork` contract. For authoring writes it opens one PostgreSQL transaction, acquires the same organization row guard as role changes/deactivation, then rechecks current authority. Authoring uses the exposed local connection/transaction only for its own schema; owner eligibility and audit persistence remain Identity operations. Module EF entities/services are internal, and architecture tests prohibit reverse/host dependencies. This coarse guard trades write concurrency for a simple, proven boundary in the initial deployment. Revisit it from measured contention, not hypothetical scale. `Variable.Database` contains only the migration manifest/runner shared by the two implemented modules; the host composes their immutable SQL resources. See [the concrete contract](../04-api-design/course-authoring.md).
 
 - **Activation / Learner grant:** acquire organization capacity guard, validate current actor/target and license, calculate consumption delta, change Identity state, persist audit and revoke/version affected sessions in one transaction. License loading and all consuming mutations use the same guard.
 - **Enrollment:** verify active Learner entitlement, organization/course/cohort consistency and authority, serialize the one-active-run-per-user/course rule, create a fresh enrollment plus audit. Enrollment itself consumes no extra seat.

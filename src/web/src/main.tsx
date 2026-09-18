@@ -1,6 +1,8 @@
 import { StrictMode, useEffect, useRef, useState, type FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ApiError, request, type Session } from './api';
+import { CourseLibrary } from './authoring';
+import { People } from './people';
 import './styles.css';
 
 function Brand() {
@@ -12,13 +14,15 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [page, setPage] = useState<'overview' | 'courses' | 'people'>('overview');
+  const [dirty, setDirty] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
 
   async function refresh() {
     setLoading(true);
-    try { setSession(await request<Session>('/api/auth/session')); setError(''); }
+    try { setSession(await request<Session>('/api/auth/session')); setError(''); setPage('overview'); setDirty(false); }
     catch (failure) {
       setSession(null);
       if (!(failure instanceof ApiError && failure.status === 401)) setError('We couldn’t reach your workspace. Please try again.');
@@ -56,8 +60,15 @@ function App() {
 
   if (session) return <div className="workspace">
     <a className="skip" href="#main">Skip to content</a>
-    <header className="workspace-header"><Brand /><span className="organization">{session.organization.name}</span><button className="quiet-button" disabled={busy} onClick={() => void logout()}>Sign out <span aria-hidden="true">↗</span></button></header>
+    <header className="workspace-header"><Brand /><span className="organization">{session.organization.name}</span><button className="quiet-button" disabled={busy || dirty} title={dirty ? 'Save or discard your draft first' : undefined} onClick={() => void logout()}>Sign out <span aria-hidden="true">↗</span></button></header>
+    <nav className="workspace-nav" aria-label="Workspace">
+      <button disabled={dirty} aria-current={page === 'overview' ? 'page' : undefined} onClick={() => setPage('overview')}>Overview</button>
+      {session.account.roles.some(role => ['Administrator', 'OrganizationManager', 'CourseAuthor', 'CohortCoordinator'].includes(role)) && <button disabled={dirty} aria-current={page === 'courses' ? 'page' : undefined} onClick={() => setPage('courses')}>Courses</button>}
+      {session.account.roles.some(role => ['Administrator', 'OrganizationManager'].includes(role)) && <button disabled={dirty} aria-current={page === 'people' ? 'page' : undefined} onClick={() => setPage('people')}>People</button>}
+    </nav>
     <main id="main" className="workspace-main">
+      {page === 'courses' ? <CourseLibrary session={session} onDirty={setDirty} /> : page === 'people' ? <People session={session} onSessionChanged={refresh} /> : <>
+
       <p className="eyebrow">YOUR WORKSPACE</p>
       <h1 tabIndex={-1} ref={heading}>Welcome, {session.account.name}.</h1>
       <p className="intro">A place for your organization to learn and grow.</p>
@@ -66,8 +77,8 @@ function App() {
         <div className="account-avatar" aria-hidden="true">{session.account.name.charAt(0).toUpperCase()}</div>
         <div><p className="eyebrow">SIGNED IN AS</p><h2 id="account-title">{session.account.name}</h2><p>{session.account.email}</p><div className="roles">{session.account.roles.map(role => <span key={role}>{role.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>)}</div></div>
       </section>
-      <section className="empty-state" aria-labelledby="learning-title"><span className="empty-symbol" aria-hidden="true">↗</span><h2 id="learning-title">Your learning workspace is taking shape.</h2><p>Course authoring and cohort learning are coming next. Your account is ready.</p></section>
-    </main><footer className="workspace-footer">Variable LMS <span>Built for learning, together.</span></footer>
+      <section className="empty-state" aria-labelledby="learning-title"><span className="empty-symbol" aria-hidden="true">↗</span><h2 id="learning-title">Your learning workspace is taking shape.</h2><p>Course authoring is available to authorized staff. Cohort learning is coming next.</p></section>
+    </> }</main><footer className="workspace-footer">Variable LMS <span>Built for learning, together.</span></footer>
   </div>;
 
   return <div className="entry">

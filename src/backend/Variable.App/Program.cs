@@ -2,9 +2,12 @@ using System.Net;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Variable.Identity;
+using Variable.App;
+using Variable.Authoring;
 
 var command = args.FirstOrDefault();
 var builder = WebApplication.CreateBuilder(command is "migrate" or "bootstrap" ? args[1..] : args);
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 1_000_000);
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole();
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -15,12 +18,14 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 if (args.FirstOrDefault() == "migrate")
 {
-    await IdentityModule.RunMigrationAsync(builder.Configuration);
+    await ApplicationMigrations.RunAsync(builder.Configuration);
     Console.WriteLine("Database migrations applied successfully.");
     return;
 }
 
+builder.Services.AddSingleton(ApplicationMigrations.Plan);
 builder.Services.AddVariableIdentity(builder.Configuration, builder.Environment);
+builder.Services.AddVariableAuthoring();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -66,6 +71,7 @@ app.UseRateLimiter();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapVariableIdentity();
+app.MapVariableAuthoring();
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/health") || context.Request.Method != "GET")
