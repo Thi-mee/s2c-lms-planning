@@ -12,6 +12,7 @@ public interface IIdentityAccess
     Task<SessionView> CurrentAsync(ClaimsPrincipal principal, CancellationToken ct);
     Task<IdentityWork> BeginWriteAsync(ClaimsPrincipal principal, CancellationToken ct);
     Task<AccountView[]> EligibleOwnersAsync(ClaimsPrincipal principal, string search, CancellationToken ct);
+    Task<AccountView[]> EligibleCohortStaffAsync(ClaimsPrincipal principal, string capability, string search, CancellationToken ct);
 }
 
 internal sealed class IdentityAccess(IdentityDb db, IdentityService identity, InstallationOptions installation, TimeProvider clock) : IIdentityAccess
@@ -41,6 +42,23 @@ internal sealed class IdentityAccess(IdentityDb db, IdentityService identity, In
         if (!string.IsNullOrEmpty(search)) query = query.Where(x => x.NormalizedEmail.Contains(search.ToUpperInvariant()));
         return (await query.OrderBy(x => x.NormalizedEmail).ThenBy(x => x.Id).Take(50).ToListAsync(ct)).Select(x => x.View()).ToArray();
     }
+
+    public async Task<AccountView[]> EligibleCohortStaffAsync(ClaimsPrincipal principal, string capability, string search, CancellationToken ct)
+    {
+        var actor = await identity.CurrentAsync(principal, ct);
+        if (!actor.Account.Roles.Intersect([nameof(AccountRole.Administrator), nameof(AccountRole.OrganizationManager), nameof(AccountRole.CohortCoordinator)]).Any())
+            throw new IdentityFailure("forbidden", 403);
+        var requiredRole = capability switch
+        {
+            "coordinator" => nameof(AccountRole.CohortCoordinator),
+            "facilitator" => nameof(AccountRole.LearningFacilitator),
+            _ => throw new IdentityFailure("invalid_staff_capability", 400)
+        };
+        var query = db.Users.AsNoTracking().Where(x => x.OrganizationId == installation.OrganizationId && x.Status == "active"
+            && x.DeletedAt == null && x.Roles.Contains(requiredRole));
+        if (!string.IsNullOrEmpty(search)) query = query.Where(x => x.NormalizedEmail.Contains(search.ToUpperInvariant()));
+        return (await query.OrderBy(x => x.NormalizedEmail).ThenBy(x => x.Id).Take(50).ToListAsync(ct)).Select(x => x.View()).ToArray();
+    }
 }
 
 // A local transaction contract, not a domain entity or a distributed unit of work.
@@ -63,6 +81,19 @@ public sealed class IdentityWork : IAsyncDisposable
             throw new IdentityFailure("owner_not_eligible", 400);
     }
 
+    public async Task<AccountView> RequireEligibleCohortStaffAsync(Guid id, string capability, CancellationToken ct)
+    {
+        var requiredRole = capability switch
+        {
+            "coordinator" => nameof(AccountRole.CohortCoordinator),
+            "facilitator" => nameof(AccountRole.LearningFacilitator),
+            _ => throw new IdentityFailure("invalid_staff_capability", 400)
+        };
+        var user = await db.Users.SingleOrDefaultAsync(x => x.OrganizationId == Actor.Organization.Id && x.Id == id
+            && x.Status == "active" && x.DeletedAt == null && x.Roles.Contains(requiredRole), ct);
+        return user?.View() ?? throw new IdentityFailure("staff_not_eligible", 400);
+    }
+
     public async Task AuditAsync(string action, Guid target, object metadata, CancellationToken ct)
     {
         db.Audit.Add(new AuditEntry { OrganizationId = Actor.Organization.Id, ActorUserId = Actor.Account.Id,
@@ -72,4 +103,15 @@ public sealed class IdentityWork : IAsyncDisposable
 
     public Task CommitAsync(CancellationToken ct) => transaction.CommitAsync(ct);
     public ValueTask DisposeAsync() => transaction.DisposeAsync();
+}
+
+// Read-only transaction handle for invariant guards. It deliberately cannot commit,
+// audit, or mutate Identity state.
+public sealed class IdentityWriteContext
+{
+    internal IdentityWriteContext(SessionView actor, DbConnection connection, DbTransaction transaction)
+    { Actor = actor; Connection = connection; Transaction = transaction; }
+    public SessionView Actor { get; }
+    public DbConnection Connection { get; }
+    public DbTransaction Transaction { get; }
 }

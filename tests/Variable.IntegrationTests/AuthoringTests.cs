@@ -202,9 +202,9 @@ public sealed partial class IdentityTests
     [Fact]
     public async Task Upgrade_from_foundation_preserves_identity_and_old_manifest_refuses_new_schema()
     {
-        // This fixture currently has v2. Reconstruct only its empty Authoring area to exercise actual v1 -> v2.
+        // Reconstruct the empty later module areas to exercise the actual v1 upgrade path.
         await Bootstrap();
-        await Execute("DROP SCHEMA authoring CASCADE; DELETE FROM platform.schema_migrations WHERE version=2");
+        await Execute("DROP SCHEMA enrollment CASCADE; DROP SCHEMA authoring CASCADE; DELETE FROM platform.schema_migrations WHERE version>=2");
         var old = new MigrationPlan(IdentityModule.Migration);
         Assert.True(await old.ReadyAsync(RuntimeConnection));
         using var client = Client(); Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/health/ready")).StatusCode);

@@ -19,3 +19,11 @@ public static class RoleGrantPolicy
             AccountRole.Learner or AccountRole.CourseAuthor or AccountRole.CohortCoordinator or AccountRole.LearningFacilitator;
     }
 }
+
+// Resource-owning modules implement this hook when removing an account capability can
+// invalidate one of their invariants. Validation joins the Identity transaction.
+public interface IAccountAccessRemovalGuard
+{
+    Task<string?> ValidateRoleRemovalAsync(IdentityWriteContext context, Guid userId, AccountRole role, CancellationToken ct);
+    Task<string?> ValidateDeactivationAsync(IdentityWriteContext context, Guid userId, CancellationToken ct);
+}

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Variable.Identity.Persistence;
 using Variable.Database;
 
@@ -23,7 +24,8 @@ internal static class IdentityClaims
     internal static long SecurityVersion(ClaimsPrincipal principal) => long.Parse(principal.FindFirstValue(Version)!, System.Globalization.CultureInfo.InvariantCulture);
 }
 
-internal sealed class IdentityService(IdentityDb db, InstallationOptions installation, IPasswordHasher<UserAccount> hasher, TimeProvider clock, MigrationPlan migrations)
+internal sealed class IdentityService(IdentityDb db, InstallationOptions installation, IPasswordHasher<UserAccount> hasher, TimeProvider clock,
+    MigrationPlan migrations, IEnumerable<IAccountAccessRemovalGuard> removalGuards)
 {
     internal async Task BootstrapAsync(string organizationName, string name, string email, string password, CancellationToken ct = default)
     {
@@ -142,6 +144,11 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
             await GuardAdministratorContinuityAsync(target, ct);
         }
         if (target.Status == "deactivated") return;
+        var organization = await db.Organizations.AsNoTracking().SingleAsync(x => x.Id == installation.OrganizationId, ct);
+        var context = new IdentityWriteContext(new(actor.View(), new(organization.Id, organization.Name)),
+            db.Database.GetDbConnection(), transaction.GetDbTransaction());
+        foreach (var guard in removalGuards)
+            if (await guard.ValidateDeactivationAsync(context, target.Id, ct) is { } rejection) throw new IdentityFailure(rejection, 409);
         var before = target.Status;
         target.Status = "deactivated";
         await RecordSecurityChangeAsync(actor, target, "user.deactivated", new { before, after = target.Status, reason }, ct);
@@ -157,22 +164,43 @@ internal sealed class IdentityService(IdentityDb db, InstallationOptions install
     }
 
     internal async Task ChangeCourseAuthorAsync(ClaimsPrincipal principal, Guid targetId, bool grant, string reason, string? password, CancellationToken ct)
+        => await ChangeOrdinaryRoleAsync(principal, targetId, AccountRole.CourseAuthor, grant, reason, password, ct);
+
+    internal async Task ChangeOrdinaryRoleAsync(ClaimsPrincipal principal, Guid targetId, AccountRole role, bool grant, string reason, string? password, CancellationToken ct)
     {
         ValidateReason(reason);
+        if (role is AccountRole.Administrator or AccountRole.OrganizationManager or AccountRole.Learner || !Enum.IsDefined(role))
+            throw new IdentityFailure("role_not_supported", 400);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         await LockOrganizationAsync(ct);
         var actor = await RequireActorAsync(principal, ct);
         var actorRoles = actor.Roles.Select(Enum.Parse<AccountRole>).ToArray();
-        if (!RoleGrantPolicy.CanGrantOrRevoke(actorRoles, AccountRole.CourseAuthor)) throw new IdentityFailure("forbidden", 403);
+        if (!RoleGrantPolicy.CanGrantOrRevoke(actorRoles, role)) throw new IdentityFailure("forbidden", 403);
         var target = await RequireTargetAsync(targetId, ct);
         if (!actor.Administrator && target.Id != actor.Id && (target.Administrator || target.Roles.Contains(nameof(AccountRole.OrganizationManager))))
             throw new IdentityFailure("forbidden", 403);
         if (target.Administrator && target.Id != actor.Id) Reauthenticate(actor, password);
         if (!target.Active) throw new IdentityFailure("account_not_active", 409);
-        if (target.Roles.Contains(nameof(AccountRole.CourseAuthor)) == grant) return;
+        var roleName = role.ToString();
+        if (target.Roles.Contains(roleName) == grant) return;
+        if (!grant)
+        {
+            var organization = await db.Organizations.AsNoTracking().SingleAsync(x => x.Id == installation.OrganizationId, ct);
+            var context = new IdentityWriteContext(new(actor.View(), new(organization.Id, organization.Name)),
+                db.Database.GetDbConnection(), transaction.GetDbTransaction());
+            foreach (var guard in removalGuards)
+                if (await guard.ValidateRoleRemovalAsync(context, target.Id, role, ct) is { } rejection) throw new IdentityFailure(rejection, 409);
+        }
         var before = target.Roles;
-        target.Roles = grant ? [.. target.Roles, nameof(AccountRole.CourseAuthor)] : target.Roles.Where(x => x != nameof(AccountRole.CourseAuthor)).ToArray();
-        await RecordSecurityChangeAsync(actor, target, grant ? "course_author.granted" : "course_author.revoked", new { before, after = target.Roles, reason }, ct);
+        target.Roles = grant ? [.. target.Roles, roleName] : target.Roles.Where(x => x != roleName).ToArray();
+        var action = role switch
+        {
+            AccountRole.CourseAuthor => "course_author",
+            AccountRole.CohortCoordinator => "cohort_coordinator",
+            AccountRole.LearningFacilitator => "learning_facilitator",
+            _ => throw new InvalidOperationException("Unsupported ordinary role.")
+        };
+        await RecordSecurityChangeAsync(actor, target, grant ? $"{action}.granted" : $"{action}.revoked", new { before, after = target.Roles, reason }, ct);
         await transaction.CommitAsync(ct);
     }
 

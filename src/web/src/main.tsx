@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ApiError, request, type Session } from './api';
 import { CourseLibrary } from './authoring';
 import { People } from './people';
+import { Cohorts } from './cohorts';
 import './styles.css';
 
 function Brand() {
@@ -14,7 +15,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [page, setPage] = useState<'overview' | 'courses' | 'people'>('overview');
+  const [page, setPage] = useState<'overview' | 'courses' | 'cohorts' | 'people'>('overview');
   const [dirty, setDirty] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,10 +65,11 @@ function App() {
     <nav className="workspace-nav" aria-label="Workspace">
       <button disabled={dirty} aria-current={page === 'overview' ? 'page' : undefined} onClick={() => setPage('overview')}>Overview</button>
       {session.account.roles.some(role => ['Administrator', 'OrganizationManager', 'CourseAuthor', 'CohortCoordinator'].includes(role)) && <button disabled={dirty} aria-current={page === 'courses' ? 'page' : undefined} onClick={() => setPage('courses')}>Courses</button>}
+      {session.account.roles.some(role => ['Administrator', 'OrganizationManager', 'CohortCoordinator', 'LearningFacilitator'].includes(role)) && <button disabled={dirty} aria-current={page === 'cohorts' ? 'page' : undefined} onClick={() => setPage('cohorts')}>Cohorts</button>}
       {session.account.roles.some(role => ['Administrator', 'OrganizationManager'].includes(role)) && <button disabled={dirty} aria-current={page === 'people' ? 'page' : undefined} onClick={() => setPage('people')}>People</button>}
     </nav>
     <main id="main" className="workspace-main">
-      {page === 'courses' ? <CourseLibrary session={session} onDirty={setDirty} /> : page === 'people' ? <People session={session} onSessionChanged={refresh} /> : <>
+      {page === 'courses' ? <CourseLibrary session={session} onDirty={setDirty} /> : page === 'cohorts' ? <Cohorts session={session} /> : page === 'people' ? <People session={session} onSessionChanged={refresh} /> : <>
 
       <p className="eyebrow">YOUR WORKSPACE</p>
       <h1 tabIndex={-1} ref={heading}>Welcome, {session.account.name}.</h1>
@@ -77,7 +79,7 @@ function App() {
         <div className="account-avatar" aria-hidden="true">{session.account.name.charAt(0).toUpperCase()}</div>
         <div><p className="eyebrow">SIGNED IN AS</p><h2 id="account-title">{session.account.name}</h2><p>{session.account.email}</p><div className="roles">{session.account.roles.map(role => <span key={role}>{role.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>)}</div></div>
       </section>
-      <section className="empty-state" aria-labelledby="learning-title"><span className="empty-symbol" aria-hidden="true">↗</span><h2 id="learning-title">Your learning workspace is taking shape.</h2><p>Course authoring is available to authorized staff. Cohort learning is coming next.</p></section>
+      <section className="empty-state" aria-labelledby="learning-title"><span className="empty-symbol" aria-hidden="true">↗</span><h2 id="learning-title">Your learning workspace is taking shape.</h2><p>Authorized staff can publish courses and schedule staffed cohorts. Learner invitations are coming next.</p></section>
     </> }</main><footer className="workspace-footer">Variable LMS <span>Built for learning, together.</span></footer>
   </div>;
 

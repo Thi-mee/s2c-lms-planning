@@ -1,6 +1,6 @@
 # First implementation sequence
 
-> **Status:** Slices 0 and 1 implemented; later slices and their product gates remain\
+> **Status:** Slices 0–2 implemented; later slices and their product gates remain\
 > **Authority:** Supporting implementation plan\
 > **Updated:** 2026-09-18
 
@@ -51,6 +51,10 @@ The first complete path uses one course, one active cohort, one required text le
 **Dependencies/gates:** Slice 0. Live editing with existing learning records is deferred to Q74; initial publication does not need it.
 
 ## 2 — Schedule a cohort and establish its staff
+
+**Implemented 2026-09-18:** Private Enrollment & Cohorts module and migration 3; published-course scheduling; atomic initial Coordinator and optional Facilitator grants; current staff-scoped list/detail; explicit staff changes; UTC schedule-derived lifecycle; narrow Coordinator/Facilitator account-role workflows; transactional staffing audit and Coordinator-continuity guard across grant revocation, role removal and deactivation. The React Cohorts screen schedules and displays staff, including one account holding both capabilities. The [cohort contract](../04-api-design/cohort-scheduling.md) records endpoints, transaction seams, bounds and retry behavior. Enrollment, learner access, withdrawal, course archive and cohort-start email are not claimed by this slice.
+
+**Validation:** 73 backend tests pass (35 real-PostgreSQL integration scenarios and 38 role/architecture cases); all ten desktop/mobile Chromium checks pass. Frontend production build, locked dependency restore, unchanged migrations 1–2 and 64 affected-document local links/anchors were checked. The local development database was backed up and upgraded from v2 to v3 without re-bootstrap. Hosted CI and Q61 release-performance/recovery qualification remain separate.
 
 **Deliver:** Published course selection, cohort schedule and eligible Coordinator grant atomically, optional Facilitator grant, staff view. The same account can hold both distinct capabilities.
 

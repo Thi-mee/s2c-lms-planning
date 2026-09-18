@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="../Variable.Identity/Variable.Identity.csproj" />
     <ProjectReference Include="../Variable.Authoring/Variable.Authoring.csproj" />
-    <ProjectReference Include="../Variable.Enrollment/Variable.Enrollment.csproj" />
+    <EmbeddedResource Include="Persistence/Migrations/*.sql" />
   </ItemGroup>
 </Project>

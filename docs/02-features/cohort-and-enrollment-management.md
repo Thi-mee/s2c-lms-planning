@@ -3,13 +3,15 @@
 > **Status:** Confirmed baseline; linked feature-local questions remain open\
 > **Authority:** Canonical feature specification\
 > **Owner:** Enrollment & Cohorts\
-> **Updated:** 2026-09-17
+> **Updated:** 2026-09-18
 
 ## Purpose and users
 
 Coordinators, Organization Managers and Administrators assign active Learners to scheduled deliveries of a published course. This is the MVP's entry into learning.
 
 ## Goal and non-goals
+
+**Implementation status (2026-09-18):** The scheduling/staffing path is implemented: published-course selection, UTC schedule, atomic initial Coordinator, optional Facilitator, current scoped staff views, explicit staff changes and Coordinator-continuity protection across grants, account roles and deactivation. Learner invitation, Enrollment/roster, progress, cohort-start email, withdrawal and transfer remain later work. See the [current HTTP contract](../04-api-design/cohort-scheduling.md); this status does not reduce the MVP's remaining requirements or resolve Q69.
 
 Schedule/staff cohorts, assign Learners, inspect roster/progress and retain run history. Public browsing/self-enrollment, cohort-less learning, per-module scheduling and implicit cohort transfer are outside MVP.
 
