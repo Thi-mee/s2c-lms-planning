@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     command: 'bash ../../scripts/dev.sh serve',
     url: 'http://localhost:5078/health/ready',
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 30_000,
     stdout: 'ignore',
     stderr: 'pipe',

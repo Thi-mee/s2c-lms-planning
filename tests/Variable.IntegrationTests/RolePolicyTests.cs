@@ -2,6 +2,8 @@ using Variable.Identity;
 using Variable.Authoring;
 using Variable.Database;
 using Variable.Enrollment;
+using Variable.Licensing;
+using Variable.Notifications;
 using Xunit;
 
 namespace Variable.IntegrationTests;
@@ -47,6 +49,13 @@ public sealed class RolePolicyTests
         Assert.DoesNotContain(enrollment.GetReferencedAssemblies(), reference => reference.Name == "Variable.App");
         Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference => reference.Name == "Variable.Enrollment");
         Assert.DoesNotContain(authoring.GetReferencedAssemblies(), reference => reference.Name == "Variable.Enrollment");
-        Assert.DoesNotContain(typeof(MigrationPlan).Assembly.GetReferencedAssemblies(), reference => reference.Name is "Variable.Identity" or "Variable.Authoring" or "Variable.Enrollment" or "Variable.App");
+        var licensing = typeof(LicensingModule).Assembly;
+        Assert.DoesNotContain(licensing.GetExportedTypes(), type => type.Name is "LicenseService" or "LicenseVerifier" || type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(licensing.GetReferencedAssemblies(), reference => reference.Name is "Variable.App" or "Variable.Notifications");
+        var notifications = typeof(NotificationsModule).Assembly;
+        Assert.DoesNotContain(notifications.GetExportedTypes(), type => type.Name is "NotificationDispatcher" or "InvitationEmailWriter" || type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(notifications.GetReferencedAssemblies(), reference => reference.Name is "Variable.App" or "Variable.Licensing");
+        Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference => reference.Name is "Variable.Licensing" or "Variable.Notifications");
+        Assert.DoesNotContain(typeof(MigrationPlan).Assembly.GetReferencedAssemblies(), reference => reference.Name is "Variable.Identity" or "Variable.Authoring" or "Variable.Enrollment" or "Variable.Licensing" or "Variable.Notifications" or "Variable.App");
     }
 }

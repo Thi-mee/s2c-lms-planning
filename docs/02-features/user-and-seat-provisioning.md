@@ -1,6 +1,6 @@
 # Feature: User and learner-seat provisioning
 
-> **Status:** Confirmed baseline; linked feature-local questions remain open\
+> **Status:** Slice 3 implemented for valid unexpired licenses; Q57/Q68 extensions remain open\
 > **Authority:** Canonical feature specification\
 > **Owner:** Identity & Organization; Licensing\
 > **Updated:** 2026-09-17
@@ -12,6 +12,10 @@ Administrators and Organization Managers invite and manage organization accounts
 ## Goal and non-goals
 
 Support invite-only onboarding, role sets, deactivation/reactivation, visible learner capacity and offline license verification. Public registration, approval queues, billing, seat-purchase workflows, bulk CSV import and directory synchronization are outside the current MVP.
+
+## Implementation status
+
+Slice 3 implements the signed version-1 license/status flow, role-set invitations, one-time acceptance, Learner grant/revocation, deactivation/reactivation/restoration capacity guards and durable invitation email delivery. The concrete endpoints, retry keys and failure codes are in the [learner provisioning contract](../04-api-design/learner-provisioning.md). Expired/suspended license effects on existing users and real-data deletion/retention are deliberately not inferred while Q68/Q57 remain open.
 
 ## Core flows
 

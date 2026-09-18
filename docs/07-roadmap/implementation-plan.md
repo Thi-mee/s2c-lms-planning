@@ -1,6 +1,6 @@
 # First implementation sequence
 
-> **Status:** Slices 0–2 implemented; later slices and their product gates remain\
+> **Status:** Slices 0–3 implemented; later slices and their product gates remain\
 > **Authority:** Supporting implementation plan\
 > **Updated:** 2026-09-18
 
@@ -63,6 +63,10 @@ The first complete path uses one course, one active cohort, one required text le
 **Dependencies/gates:** Slice 1. The initial path uses a currently active cohort. Q69 gates before/after-window access, withdrawal and archive flows; do not add implicit transfer.
 
 ## 3 — Verify a license; invite and activate a Learner
+
+**Implemented 2026-09-18:** Private Licensing and Notifications modules, migrations 4–7, strict offline ES256 version-1 verification, monotonic replacement/status/utilization, capacity-safe invitation/acceptance, Learner grants, reactivation/restoration, protected durable email intent with leased SMTP retry, customer SMTP configuration, synthetic issuer fixture tooling and React Licensing/People/acceptance flows. Q68 behavior is deliberately narrow: invalid/expired capacity blocks positive consumption, existing learners are not silently changed, and downsizing below current utilization is rejected. Q57 still gates real-data retention/deletion policy.
+
+**Validation:** 83 backend tests pass against real PostgreSQL, including signature/schema/binding/replay failures, utilization, request retry/resend, audit/email rollback, SMTP retry and organization-guard capacity/replacement races. All 12 desktop/mobile Chromium checks pass, including signed-license installation and invitation acceptance through Mailpit. Frontend production build, backend warning-free build, shell syntax and local v3→v7 migration were checked. The development database was backed up before upgrade. Hosted CI, issuer/customer interoperability sign-off, measurable Q61 targets and customer recovery qualification remain separate release gates.
 
 **Deliver:** Signed version-1 license load/status, learner utilization, permitted role sets, pending invite, durable email-intent table/worker and token acceptance into an active Learner account. Develop with separate test issuer keys and interoperable vectors; no vendor billing application is required. Same release supports customer SMTP configuration.
 

@@ -1,6 +1,6 @@
 # LMS-facing license contract
 
-> **Status:** Confirmed contract baseline; wire profile is an engineering selection to verify with issuer test vectors\
+> **Status:** Version-1 LMS verifier implemented; external issuer interoperability sign-off remains\
 > **Authority:** Canonical — elaborates D6 and ADR-3/ADR-12\
 > **Updated:** 2026-09-17
 
@@ -11,6 +11,8 @@ Variable's separate issuer produces a signed license document; the customer inst
 ## Version 1 envelope
 
 **Engineering wire baseline:** JWS compact serialization, protected `alg = ES256`, `kid` referencing a bundled/trusted public key, and `typ = variable-lms-license`. Sign the exact encoded header/payload bytes and verify using a maintained JOSE implementation; do not reserialize JSON to recreate signed bytes. ES256 is ECDSA P-256 with SHA-256 under the JWS signature encoding. These formats are defined by [RFC 7515](https://www.rfc-editor.org/rfc/rfc7515.html) and [RFC 7518](https://www.rfc-editor.org/rfc/rfc7518.html).
+
+**Implemented selection:** the LMS and synthetic fixture tool use Microsoft IdentityModel's `JsonWebTokenHandler` 8.22.0 for signing/verification interoperability, surrounded by explicit compact-size, duplicate-property, header and schema validation. Production issuer sign-off must still run the shared vectors against the independent issuer implementation before customer release.
 
 Illustrative decoded payload, not a usable license:
 

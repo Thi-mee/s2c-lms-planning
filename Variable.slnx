@@ -5,8 +5,13 @@
     <Project Path="src/backend/Variable.Authoring/Variable.Authoring.csproj" />
     <Project Path="src/backend/Variable.Database/Variable.Database.csproj" />
     <Project Path="src/backend/Variable.Enrollment/Variable.Enrollment.csproj" />
+    <Project Path="src/backend/Variable.Licensing/Variable.Licensing.csproj" />
+    <Project Path="src/backend/Variable.Notifications/Variable.Notifications.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Variable.IntegrationTests/Variable.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Variable.LicenseFixture/Variable.LicenseFixture.csproj" />
   </Folder>
 </Solution>
