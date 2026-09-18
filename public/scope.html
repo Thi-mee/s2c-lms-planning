@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>{const s=localStorage.getItem('color-scheme');if(s){document.querySelector('meta[name="color-scheme"]').content=s;}}</script>
+<title>Variable LMS — Build the essential path first.</title>
+<meta name="description" content="The walking skeleton exercises the architectural boundaries before the full MVP is expanded.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+<div class="wrap topbar__inner">
+<a class="brand" href="index.html">
+<span class="brand__mark">V</span> Variable&nbsp;LMS</a>
+<nav class="nav" aria-label="Primary">
+<a href="index.html">Overview</a>
+<a href="prd.html">Product</a>
+<a href="scope.html" aria-current="page">Scope</a>
+<a href="architecture.html">Architecture</a>
+<button class="toggle" data-theme-toggle aria-pressed="false" title="Toggle theme">
+<span data-label>Light</span>
+</button>
+</nav>
+</div>
+</header>
+<main id="main">
+<section class="hero">
+<div class="wrap reveal">
+<p class="eyebrow">Variable LMS · Product dossier · Reviewed 17 September 2026</p>
+<h1>Build the essential path first.</h1>
+<p class="lede">The walking skeleton exercises the architectural boundaries before the full MVP is expanded.</p>
+<div class="callout">
+<span class="lbl">Derived documentation</span>
+<p>This summary is not an implementation specification. Canonical repository sources govern: <a href="../docs/07-roadmap/mvp.md">Scope</a> · <a href="../docs/07-roadmap/implementation-plan.md">Build sequence</a> · <a href="../docs/00-product/open-questions.md">Decision gates</a>. Application implementation has not started.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Included</p>
+</div>
+<div>
+<div class="section__head">
+<h2>A complete cohort-learning product.</h2>
+</div>
+<div class="grid grid--2">
+<div class="card">
+<h3>People and licensing</h3>
+<p>Organization bootstrap, explicit role grants, invitation/activation, deactivation, learner capacity and revocable authentication.</p>
+</div>
+<div class="card">
+<h3>Authoring and delivery</h3>
+<p>Single-owner courses, ordered modules and text lessons, required readings, published-course cohorts and assigned learning runs.</p>
+</div>
+<div class="card">
+<h3>Assessment and evidence</h3>
+<p>Practice/graded quizzes, immutable answers, audited allowance resets, run completion and fixed-template course certificates.</p>
+</div>
+<div class="card">
+<h3>Discussion and operations</h3>
+<p>Cohort forums, durable emails, transactional audit, versioned deployment, explicit migrations and tested backup/restore guidance.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Deferred</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Scope stays deliberate.</h2>
+</div>
+<p>No public catalog/self-enrollment, generic uploads/video hosting, SCORM/xAPI, billing engine, collaborator editing, notification center, arbitrary certificate templates or public verification in MVP. No mandatory Redis, broker, Kubernetes or microservices infrastructure.</p>
+<p>Helm launch support depends on customer requirements. Shared-tenant SaaS and service extraction require separate justified decisions. Transfer is not implemented unless explicitly required and specified.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Sequence</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Deliver usable slices.</h2>
+</div>
+<ol>
+<li>Organization/Admin bootstrap and authenticated shell.</li>
+<li>Create and publish one course.</li>
+<li>Schedule and staff a cohort.</li>
+<li>Invite and activate a Learner within licensed capacity.</li>
+<li>Assign a new run and record required-content completion.</li>
+<li>Submit a graded assessment; evaluate completion and issue/download the course credential.</li>
+<li>Expand remaining MVP and qualify a versioned release with recovery tests.</li>
+</ol>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Gates</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Foundations are ready; some feature choices remain.</h2>
+</div>
+<p>Open local decisions cover license expiry/downsize, cohort boundary access, reading-completion signal, attempt lifecycle, multi-select scoring, feedback/preview, live edits and administrative reissue. Release gates include privacy/retention, measurable operating targets, supported platforms, formal accessibility acceptance and distribution terms.</p>
+<p>These gates have owners in the canonical question register; this dossier does not choose defaults for them. There are no promised release dates or later-feature phase commitments.</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="foot">
+<div class="wrap foot__inner">
+<span>Variable LMS · By Variable · s2c is the first customer</span>
+<span>
+<a href="../docs/README.md">Source authority</a> · <a href="../docs/07-roadmap/readiness.md">Readiness</a>
+</span>
+</div>
+</footer>
+<script src="theme.js">
+</script>
+</body>
+</html>

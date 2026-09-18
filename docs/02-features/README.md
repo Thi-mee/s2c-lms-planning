@@ -1,49 +1,27 @@
-# Features
+# Feature specifications
 
-> **Last Updated:** June 2026
-
----
+> **Status:** Confirmed index\
+> **Authority:** Canonical routing\
+> **Updated:** 2026-09-17
 
 ## Purpose
 
-This folder contains individual feature specification documents for the LMS. Each feature is documented in its own file using the standard template.
+These documents specify current MVP behavior. Linked question gates remain unresolved; a confirmed baseline does not convert those questions into decisions. Permissions live once in the [role policy](../01-domain/roles-and-permissions.md); entity documents own representation, not a competing grant matrix.
 
----
+| Feature | Owning modules |
+|---|---|
+| [User and learner-seat provisioning](user-and-seat-provisioning.md) | Identity & Organization; Licensing |
+| [Course and module administration](course-and-module-administration.md) | Course Authoring |
+| [Cohort and enrollment management](cohort-and-enrollment-management.md) | Enrollment & Cohorts |
+| [Rich text and reading lessons](rich-text-and-reading-lessons.md) | Course Authoring; Progress & Certification |
+| [Quiz engine](quiz-engine.md) | Assessment |
+| [Completion and certificate generation](completion-and-certificate-generator.md) | Progress & Certification; Enrollment & Cohorts |
+| [Course and module forums](course-and-module-forums.md) | Discussion; Notifications |
 
-## How to Add a Feature
+## Maintenance
 
-1. Copy `feature-template.md` to a new file with a descriptive name (e.g., `course-enrollment.md`)
-2. Fill in the template sections
-3. Use `TBD` for sections that are not yet defined
-4. Add the feature to the index below
-5. Cross-link to related domain concepts, entities, and screens
+Use the [feature template](feature-template.md). Read the owning domain/architecture documents first; cross-link data and screens. Record new uncertainty in the central question register and explicitly revise decisions rather than retaining contradictory rules.
 
----
+## Open questions and related documents
 
-## Feature Index
-
-| Feature | Status | File | Description |
-|---------|--------|------|-------------|
-| User & Seat Provisioning | Draft | TBD | Manage active student accounts within seat limits |
-| Course & Module Administration | Draft | TBD | Manage course structures, modules, and ordering |
-| Rich Text & Reading Lessons | Draft | TBD | Author reading notes and link external references |
-| Quiz Engine | Draft | TBD | Create and take practice and graded quizzes |
-| Course & Module Forums | Draft | TBD | Post, reply, and coordinate discussion threads |
-| Completion & Certificate Generator | Draft | TBD | Auto-issue cryptographic certificates |
-
----
-
-## Future Feature Backlog
-
-- **xAPI Integration Strategy:** Documented strategy for translating events to xAPI payloads.
-- **Paid Courses:** Stripe integration and custom shopping cart experience.
-- **Organization Tenant Provisioner:** SaaS model management for spinning up new organization domains.
-- **Video Storage & Streaming:** Transcoding pipelines and dynamic video player components.
-
----
-
-## Related Documents
-
-- [Feature Template](./feature-template.md)
-- [Core Concepts](../01-domain/core-concepts.md)
-- [User Journeys](../01-domain/user-journeys.md)
+[Question register](../00-product/open-questions.md) · [MVP](../07-roadmap/mvp.md) · [Implementation sequence](../07-roadmap/implementation-plan.md)

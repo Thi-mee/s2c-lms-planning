@@ -1,162 +1,31 @@
-# AGENTS.md — Instructions for AI Agents
+# Working on Variable LMS
 
-This file provides guidance for **any AI coding or writing agent** working with this repository, including Claude, ChatGPT, Cursor, Codex, Copilot, and similar tools.
+Variable is the vendor; Variable LMS is the product; s2c is the first customer organization.
 
----
+## Read only the context needed
 
-## Repository Overview
+1. Read [docs/README.md](docs/README.md) for authority and the task routing table.
+2. Read the relevant canonical domain/feature document and its entity/API guidance.
+3. For architectural changes, read the applicable [ADR](docs/06-architecture/decisions.md).
+4. Check the relevant [open question](docs/00-product/open-questions.md) before implementing unresolved behavior.
 
-This is a **planning and documentation repository** for a Learning Management System (LMS).
+The September [accepted decisions](docs/00-product/accepted-decisions.md) take precedence. Historical snapshots, research recommendations, templates, and `public/` are not requirements. Do not reopen resolved decisions because an archived document differs. Flag a real conflict and continue independent work.
 
-- **Phase:** Brainstorming & Planning
-- **Content:** Product documentation, feature specs, domain models, architecture decisions
-- **Code:** None yet — this is documentation only
+## Universal invariants
 
----
+Use [implementation invariants](docs/06-architecture/implementation-invariants.md) as the canonical enforcement checklist: organization isolation, explicit role delegation, atomic learner capacity, enrollment-owned history, module-owned writes, durable effects, idempotent credentials, and safe migrations. Resource grants never confer organization-level security roles. Do not copy these policies into new competing matrices.
 
-## Getting Oriented
+## Scope and implementation
 
-### Files to read first
+This is the living product/implementation repository. Implement application code, tests, and deployment artifacts only when the current task authorizes implementation. The 2026-09-17 consolidation establishes documentation, not runnable product code. A modular monolith does not justify speculative services, brokers, mandatory Redis, or Kubernetes dependencies.
 
-1. `README.md` — Project overview and structure
-2. This file (`AGENTS.md`) — Agent-specific instructions
-3. `docs/00-product/vision.md` — What we are building
-4. `docs/00-product/open-questions.md` — What is still undecided
-5. `docs/01-domain/glossary.md` — Shared terminology
-6. `docs/01-domain/core-concepts.md` — Core domain concepts
+## Change and validate
 
-### Understanding the structure
+- Read before editing; preserve unrelated working-tree changes.
+- Update canonical behavior, affected contracts/tests, and derived summaries together; record decision changes and their rationale.
+- Use the glossary's terms, relative documentation links, kebab-case documentation names, and existing section templates.
+- Keep unresolved product choices in the central question register with a feature gate. Engineering defaults must be identified as such.
+- Validate local links/anchors, active terminology and supersession references for documentation changes. For implementation, run the applicable invariant tests, build, and slice acceptance checks in the [plan](docs/07-roadmap/implementation-plan.md).
+- Report what changed, what was validated, and any remaining gates. Never mark an entire feature complete while its specified acceptance or security checks remain unverified.
 
-```text
-docs/00-product/     → Product direction and goals
-docs/01-domain/      → Domain language, roles, concepts
-docs/02-features/    → Individual feature specifications
-docs/03-data-model/  → Conceptual data entity definitions
-docs/04-api-design/  → API surface planning
-docs/05-frontend/    → Screen and navigation planning
-docs/06-architecture/→ Architecture decisions and principles
-docs/07-roadmap/     → MVP and phased build plan
-docs/08-research/    → Industry research and references
-```
-
-You do not need to read the entire repository to work on one feature. Read the relevant section and its related documents.
-
----
-
-## Adding New Feature Documents
-
-1. Use the template at `docs/02-features/feature-template.md`
-2. Create a new file in `docs/02-features/` with a descriptive kebab-case name
-3. Fill in as many sections as possible; use `TBD` for unknowns
-4. Update `docs/02-features/README.md` to include the new feature
-5. Cross-link to related concepts in `01-domain/`, entities in `03-data-model/`, and screens in `05-frontend/`
-
----
-
-## Updating Existing Documents
-
-- **Read before writing.** Understand what is already documented.
-- **Do not silently change decisions.** If you disagree with a documented decision, flag it as a question.
-- **Preserve context.** Keep existing content unless it is explicitly being revised.
-- **Note changes.** When updating a decision, add a brief note about what changed and why.
-- **Update cross-links.** If you rename or restructure a document, update any files that link to it.
-
----
-
-## Avoiding Duplication
-
-- Check if the topic is already covered elsewhere before creating a new document
-- Cross-link to existing documents instead of repeating their content
-- The **glossary** (`docs/01-domain/glossary.md`) is the single source of truth for terminology
-- The **open questions** file (`docs/00-product/open-questions.md`) is the single source for unresolved decisions
-
----
-
-## Keeping Terminology Consistent
-
-- Always check `docs/01-domain/glossary.md` before introducing new terms
-- If you need a new term, add it to the glossary with a clear definition
-- Use the exact term from the glossary — do not use synonyms
-- Example: If the glossary defines "Learner", do not use "Student" interchangeably elsewhere
-
----
-
-## Documenting Assumptions
-
-- If you make an assumption to move forward, **document it explicitly**
-- Use a callout or a dedicated section like:
-  ```
-  > **Assumption:** We assume courses have a single instructor. This may change.
-  ```
-- Add related questions to `docs/00-product/open-questions.md`
-
----
-
-## Separating Confirmed Decisions from Open Questions
-
-Use clear markers throughout documentation:
-
-- **Confirmed decisions** should be stated plainly as facts
-- **Open questions** should be marked with `> **Open Question:**` or listed in the document's "Open Questions" section
-- **Draft content** should be marked with a `Status: Draft` field or a `> **Draft:**` callout
-
-Do not present uncertain ideas as confirmed decisions.
-
----
-
-## Avoiding Premature Implementation
-
-**Do not create:**
-
-- Backend application code (servers, routes, controllers)
-- Frontend application code (components, pages, styles)
-- Database migrations or ORM model files
-- Docker, CI/CD, or deployment configurations
-- Package manifests (package.json, requirements.txt, Gemfile, etc.)
-
-**You may include in documentation:**
-
-- Pseudocode to illustrate a workflow
-- Example JSON shapes to describe API contracts
-- Example data structures to describe entities
-- Mermaid diagrams to visualize architecture or flows
-
-The line is: **documentation about code is fine; actual runnable code is not.**
-
----
-
-## File Naming Conventions
-
-- Use **kebab-case** for all filenames: `course-enrollment.md`, not `CourseEnrollment.md`
-- Use **descriptive names**: `progress-tracking.md`, not `feature-7.md`
-- Templates are named with a `-template` suffix: `feature-template.md`
-- Section README files explain the folder's purpose
-
----
-
-## Document Structure Conventions
-
-Each document should include:
-
-1. **Title** — Clear `# Heading` at the top
-2. **Status** — Draft, In Review, Confirmed, or Superseded
-3. **Purpose** — Brief description of what the document covers
-4. **Content** — The main body organized with clear headings
-5. **Open Questions** — Any unresolved items specific to this document
-6. **Related Documents** — Links to related files in the repo
-
----
-
-## Quick Reference
-
-| Task | Where |
-|------|-------|
-| Add a new feature | `docs/02-features/` using `feature-template.md` |
-| Add a new entity | `docs/03-data-model/` using `entity-template.md` |
-| Add a new API | `docs/04-api-design/` using `api-template.md` |
-| Add a new screen | `docs/05-frontend/` using `screen-template.md` |
-| Define a term | `docs/01-domain/glossary.md` |
-| Record a decision | `docs/06-architecture/decisions.md` |
-| Track an open question | `docs/00-product/open-questions.md` |
-| Add research notes | `docs/08-research/` |
-| Check the build plan | `docs/07-roadmap/` |
+Scoped architectural guidance lives in [module boundaries](docs/06-architecture/module-boundaries.md), [security and identity](docs/06-architecture/security-and-identity.md), and [release and operations](docs/06-architecture/release-and-operations.md). Add further scoped instructions only when actual implementation needs them.

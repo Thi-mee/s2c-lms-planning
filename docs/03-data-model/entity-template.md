@@ -1,86 +1,30 @@
-# Entity: [Entity Name]
+# Entity: [name]
 
-> **Status:** Draft | In Review | Confirmed  
-> **Last Updated:** [Date]
+> **Status:** Template — replace with Draft, In Review or Confirmed when used\
+> **Authority:** Template, not a requirement\
+> **Owner:** [module / responsible role]\
+> **Updated:** [date]
 
----
+## Purpose and owner
 
-## Purpose
+State the domain concept and module owning writes. Avoid adding a product entity for an implementation detail without need.
 
-What does this entity represent? Why does it exist in the system?
+## Fields and relationships
 
----
+List fields, types, nullability and constraints. Owned rows need organization_id; learning evidence needs enrollment_id and same-course/run integrity. Link the shared data-model conventions rather than repeating them.
 
-## Key Fields
+## Lifecycle and invariants
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| id | identifier | Yes | Unique identifier |
-| [field] | [type] | [Yes/No] | [Description] |
+Specify allowed transitions, uniqueness, tenant-consistent references, history/snapshot semantics and deletion/retention policy. Describe intended database constraints separately from application checks.
 
-> **Note:** Field types are conceptual (e.g., "text", "identifier", "timestamp", "enum", "reference"). They are not tied to a specific database type yet.
+## Permissions and audit
 
----
+Link the canonical permission action/resource. Identify required audit and transactional work; do not invent entity-wide CRUD grants.
 
-## Relationships
+## Open questions
 
-| Related Entity | Relationship | Description |
-|---------------|-------------|-------------|
-| [Entity] | [has many / belongs to / has one] | [Description] |
+Link central Q IDs, or state none.
 
----
+## Related documents
 
-## Lifecycle
-
-Describe the states this entity goes through.
-
-```text
-[State 1] → [State 2] → [State 3]
-```
-
----
-
-## Business Rules
-
-- Rule 1
-- Rule 2
-
----
-
-## Validation Rules
-
-- [Field] must be [constraint]
-- [Field] must be [constraint]
-
----
-
-## Permissions
-
-Who can create, read, update, and delete this entity?
-
-| Action | Learner | Instructor | Admin | Org Manager |
-|--------|---------|------------|-------|-------------|
-| Create | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
-| Read | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
-| Update | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
-| Delete | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
-
----
-
-## Audit / History Requirements
-
-Should changes to this entity be tracked? What audit information is needed?
-
----
-
-## Open Questions
-
-- Question 1
-- Question 2
-
----
-
-## Related Documents
-
-- [Link to related feature]
-- [Link to related entity]
+Link the owning feature, related entities and module boundary.

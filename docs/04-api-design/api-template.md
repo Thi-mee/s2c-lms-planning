@@ -1,106 +1,34 @@
-# API: [API Area / Endpoint Group]
+# API: [area / use-case]
 
-> **Status:** Draft | In Review | Confirmed  
-> **Last Updated:** [Date]
+> **Status:** Template — replace with Draft, In Review or Confirmed when used\
+> **Authority:** Template, not a requirement\
+> **Owner:** [module / responsible role]\
+> **Updated:** [date]
 
----
+## Purpose and owning use-case
 
-## Purpose
+Link canonical feature behavior and owning module.
 
-What does this API enable? What problem does it solve?
+## Request and response contract
 
----
+Document method/path, typed DTOs, validation, success/error shapes, pagination if needed and compatibility. Examples are documentation, not implemented endpoints.
 
-## Actor
+## Authentication and authorization
 
-Which user type(s) will call this API?
+Link canonical role/resource policy; identify current organization and Enrollment scope, CSRF requirements and sensitive reauthorization. List fields the caller cannot set.
 
-- [ ] Learner
-- [ ] Instructor
-- [ ] Administrator
-- [ ] Organization Manager
-- [ ] System (internal/automated)
+## Transaction and retries
 
----
+Specify invariant checks, idempotency-key scope/payload matching, semantic uniqueness, required audit and durable work. Explain retry and concurrency failures.
 
-## Endpoints
+## Acceptance cases
 
-### [HTTP Method] [Path]
+Include cross-organization/resource attempts, stale authority and invalid state transitions.
 
-**Purpose:** [What this endpoint does]
+## Open questions
 
-**Request:**
+Link central Q IDs, or state none.
 
-```json
-{
-  "field": "type — description"
-}
-```
+## Related documents
 
-**Response (Success):**
-
-```json
-{
-  "field": "type — description"
-}
-```
-
-**Response (Error):**
-
-```json
-{
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message"
-  }
-}
-```
-
----
-
-## Permissions
-
-| Endpoint | Learner | Instructor | Admin | Org Manager |
-|----------|---------|------------|-------|-------------|
-| [Endpoint] | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
-
----
-
-## Validation
-
-- [Field] must be [constraint]
-- [Field] must be [constraint]
-
----
-
-## Error Cases
-
-| Scenario | Error Code | HTTP Status |
-|----------|------------|-------------|
-| [Scenario] | [Code] | [Status] |
-
----
-
-## Pagination
-
-Does this endpoint return paginated results? If so, describe the pagination approach.
-
----
-
-## Idempotency
-
-Is this endpoint idempotent? Are there any considerations for retry safety?
-
----
-
-## Open Questions
-
-- Question 1
-- Question 2
-
----
-
-## Related Documents
-
-- [Link to related feature]
-- [Link to related entity]
+Link feature, entity, screen and architectural contract.

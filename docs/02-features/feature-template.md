@@ -1,102 +1,34 @@
-# Feature: [Feature Name]
+# Feature: [name]
 
-> **Status:** Draft | In Review | Confirmed | Deferred  
-> **Last Updated:** [Date]  
-> **Owner:** [Who is responsible for defining this feature]
+> **Status:** Template — replace with Draft, In Review or Confirmed when used\
+> **Authority:** Template, not a requirement\
+> **Owner:** [module / responsible role]\
+> **Updated:** [date]
 
----
+## Purpose, users and goal
 
-## Problem
+Describe the concrete outcome and non-goals using glossary terms.
 
-What problem does this feature solve? Why is it needed?
+## Core flows and business rules
 
----
-
-## Users Affected
-
-Which user types interact with this feature?
-
-- [ ] Learner
-- [ ] Instructor
-- [ ] Administrator
-- [ ] Organization Manager
-
----
-
-## Goal
-
-What is the intended outcome of this feature?
-
----
-
-## Non-Goals
-
-What is explicitly **not** part of this feature?
-
----
-
-## User Stories
-
-- As a [user type], I want to [action], so that [benefit].
-- As a [user type], I want to [action], so that [benefit].
-
----
-
-## Core Flows
-
-Describe the main user flows step by step.
-
-### Flow: [Flow Name]
-
-1. Step one
-2. Step two
-3. Step three
-
----
-
-## Business Rules
-
-- Rule 1
-- Rule 2
-
----
+Describe observable behavior, lifecycle transitions and failure cases. Link the canonical domain invariant; label engineering assumptions and unresolved Q IDs.
 
 ## Permissions
 
-| Action | Learner | Instructor | Admin | Org Manager |
-|--------|---------|------------|-------|-------------|
-| [Action] | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
+Link the canonical role/grant policy and identify the relevant action/resource. Update that policy if new behavior is agreed; do not create a second permission matrix here.
 
----
+## Data and boundaries
 
-## Data Requirements
+Link owner module, entities, organization/run scope, transaction, history and durable side effects.
 
-What data does this feature need? Link to entity documents in `03-data-model/` where applicable.
+## Acceptance cases
 
----
+Cover success, authorization denial, concurrency/retry and recovery where applicable.
 
-## Edge Cases
+## Open questions
 
-- What happens if...?
-- What happens when...?
+Link central question IDs, or state none. Do not repeat already resolved questions.
 
----
+## Related documents
 
-## Open Questions
-
-- Question 1
-- Question 2
-
----
-
-## Future Considerations
-
-Things that are out of scope now but may be relevant later.
-
----
-
-## Related Documents
-
-- [Link to related feature]
-- [Link to related entity]
-- [Link to related screen]
+Link features, entities and UI/API guidance actually used.

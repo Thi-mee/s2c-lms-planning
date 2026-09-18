@@ -1,51 +1,17 @@
-# Research
+# Research and historical context
 
-> **Last Updated:** June 2026
-
----
+> **Status:** Current index\
+> **Authority:** Supporting; individual archived documents are Historical\
+> **Updated:** 2026-09-17
 
 ## Purpose
 
-This folder contains research notes, industry analysis, and reference materials that inform product decisions. Research should be used to guide the LMS direction, not to blindly copy other products.
+Keep rationale and external evidence without allowing it to override accepted decisions. Observations, recommendations and accepted rules are distinct. A research recommendation is not an ADR acceptance.
 
----
+- [Verified technical references](references.md): primary sources used during this consolidation.
+- [Architecture evaluation](architecture-evaluation.md): historical July research, explicitly superseded as implementation guidance.
+- [Historical snapshots](history/README.md): prior ADR log, question register and initial entity sketch, including pre-existing uncommitted material.
 
-## How to Add Research
+## Open questions and related documents
 
-1. Create a new file with a descriptive name (e.g., `cohort-based-learning.md`)
-2. Include the source of the information
-3. Separate factual observations from personal recommendations
-4. Link to relevant product or feature documents
-
----
-
-## Research Areas
-
-Topics worth investigating:
-
-| Topic | Status | File |
-|-------|--------|------|
-| LMS Industry Overview | Not Started | — |
-| Course Delivery Models | Not Started | — |
-| Cohort-Based Learning | Not Started | — |
-| Self-Paced Learning | Not Started | — |
-| Instructor-Led Learning | Not Started | — |
-| Assessment Strategies | Not Started | — |
-| Certification Approaches | Not Started | — |
-| Progress Tracking Patterns | Not Started | — |
-| SCORM / xAPI Standards | Not Started | — |
-| Admin Operations | Not Started | — |
-| Student Engagement Strategies | Not Started | — |
-| Reporting and Analytics | Not Started | — |
-| Competitive Analysis | Not Started | — |
-| Accessibility in LMS | Not Started | — |
-
-See [References](./references.md) for collected external links and sources.
-
----
-
-## Related Documents
-
-- [References](./references.md)
-- [Product Vision](../00-product/vision.md)
-- [Open Questions](../00-product/open-questions.md)
+Record live product uncertainty in the [question register](../00-product/open-questions.md). Use [current ADRs](../06-architecture/decisions.md) for architecture and the [source map](../README.md) for precedence.

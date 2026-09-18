@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>{const s=localStorage.getItem('color-scheme');if(s){document.querySelector('meta[name="color-scheme"]').content=s;}}</script>
+<title>Variable LMS — The product baseline.</title>
+<meta name="description" content="Assigned cohort learning, with explicit authority and preserved learning history.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+<div class="wrap topbar__inner">
+<a class="brand" href="index.html">
+<span class="brand__mark">V</span> Variable&nbsp;LMS</a>
+<nav class="nav" aria-label="Primary">
+<a href="index.html">Overview</a>
+<a href="prd.html" aria-current="page">Product</a>
+<a href="scope.html">Scope</a>
+<a href="architecture.html">Architecture</a>
+<button class="toggle" data-theme-toggle aria-pressed="false" title="Toggle theme">
+<span data-label>Light</span>
+</button>
+</nav>
+</div>
+</header>
+<main id="main">
+<section class="hero">
+<div class="wrap reveal">
+<p class="eyebrow">Variable LMS · Product dossier · Reviewed 17 September 2026</p>
+<h1>The product baseline.</h1>
+<p class="lede">Assigned cohort learning, with explicit authority and preserved learning history.</p>
+<div class="callout">
+<span class="lbl">Derived documentation</span>
+<p>This summary is not an implementation specification. Canonical repository sources govern: <a href="../docs/07-roadmap/mvp.md">MVP specification</a> · <a href="../docs/01-domain/core-concepts.md">Domain</a> · <a href="../docs/01-domain/roles-and-permissions.md">Permissions</a> · <a href="../docs/02-features/README.md">Features</a>. Application implementation has not started.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Journey</p>
+</div>
+<div>
+<div class="section__head">
+<h2>From invitation to completion.</h2>
+</div>
+<ol>
+<li>Operator establishes the organization and a staff-only Administrator.</li>
+<li>Authorized Author creates and publishes a course; staff schedule and coordinate a cohort.</li>
+<li>Manager or Administrator invites a Learner. Acceptance atomically checks learner capacity.</li>
+<li>Coordinator, Administrator or Manager assigns a new learning run.</li>
+<li>Learner consumes required lessons and passes every graded quiz in that run.</li>
+<li>Completion is recorded and the first course certificate is issued; later completed runs retain their own evidence.</li>
+</ol>
+<p>Learning starts from assigned cohorts. There is no MVP self-enrollment catalog, publishing approval queue or sequential lesson lock.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Authority</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Privilege is explicitly delegated.</h2>
+</div>
+<p>Organization Managers may grant/revoke Learner, Course Author, Cohort Coordinator and Learning Facilitator. They cannot grant/revoke Organization Manager or Administrator or use account edits to gain that authority.</p>
+<p>Administrators manage Organization Managers and lower organizational roles. Administrator assignment/removal has a dedicated privileged operation, audit and final-usable-Administrator protection. Resource grants remain distinct from account roles. Consult the canonical matrix for every action.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Evidence</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Preserve the run that produced the result.</h2>
+</div>
+<p>Lesson progress and submitted assessment evidence are scoped to Enrollment. Resetting an exhausted failed allowance retains old submissions. Re-enrollment starts new progress and allowance. Course summaries do not replace raw history.</p>
+<p>Completion requires all required lessons and all graded passes in the current run. Practice quizzes do not count. Certificate identity is an opaque reference; the MVP does not include public anonymous verification.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Communication</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Discussion and durable email.</h2>
+</div>
+<p>Course/module forums are scoped to a cohort and use sanitized Markdown. Permissioned moderation is audited. Email covers invitations, cohort starts, replies and completion, with persisted retry intent and configured SMTP. A global notification center is deferred.</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="foot">
+<div class="wrap foot__inner">
+<span>Variable LMS · By Variable · s2c is the first customer</span>
+<span>
+<a href="../docs/README.md">Source authority</a> · <a href="../docs/07-roadmap/readiness.md">Readiness</a>
+</span>
+</div>
+</footer>
+<script src="theme.js">
+</script>
+</body>
+</html>

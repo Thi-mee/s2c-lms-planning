@@ -1,76 +1,30 @@
-# Screen: [Screen Name]
+# Screen: [name]
 
-> **Status:** Draft | In Review | Confirmed  
-> **Last Updated:** [Date]
+> **Status:** Template — replace with Draft, In Review or Confirmed when used\
+> **Authority:** Template, not a requirement\
+> **Owner:** [module / responsible role]\
+> **Updated:** [date]
 
----
+## Purpose and entry points
 
-## Purpose
+Link the canonical feature and navigation context, including selected learning run where applicable.
 
-What is this screen for? What task does the user accomplish here?
+## Visible actions and data
 
----
+Use the current role/resource capability policy; server authorization remains mandatory. Specify task flow, data source and minimal exposed DTOs.
 
-## User Type
+## States and interactions
 
-Which users see this screen?
+Define loading/empty/success/error, permission loss, pending/exhausted/retry states as relevant. Explain responsive layout, keyboard flow, semantic controls and focus/error presentation.
 
-- [ ] Learner
-- [ ] Instructor
-- [ ] Administrator
-- [ ] Organization Manager
+## Acceptance cases
 
----
+Describe observable outcomes, retry safety and authorization boundaries; avoid implementation-mirroring tests.
 
-## Entry Points
+## Open questions
 
-How does the user get to this screen?
+Link central Q IDs, or state none.
 
-- From [screen/link/action]
+## Related documents
 
----
-
-## Key Elements
-
-What are the main UI elements on this screen?
-
-- Element 1: [description]
-- Element 2: [description]
-
----
-
-## Actions Available
-
-What can the user do on this screen?
-
-| Action | Description | Navigates To |
-|--------|-------------|--------------|
-| [Action] | [Description] | [Screen/Modal] |
-
----
-
-## Data Displayed
-
-What data is shown on this screen? Link to entity documents where applicable.
-
----
-
-## States
-
-- **Empty state:** What does the screen look like with no data?
-- **Loading state:** How is loading indicated?
-- **Error state:** How are errors displayed?
-
----
-
-## Open Questions
-
-- Question 1
-- Question 2
-
----
-
-## Related Documents
-
-- [Link to related feature]
-- [Link to related user journey]
+Link feature, API, entities and navigation.

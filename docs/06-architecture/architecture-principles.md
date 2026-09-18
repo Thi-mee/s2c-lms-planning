@@ -1,59 +1,27 @@
-# Architecture Principles
+# Architecture principles
 
-> **Status:** Draft  
-> **Last Updated:** June 2026
-
----
+> **Status:** Confirmed baseline\
+> **Authority:** Canonical — supporting guidance for the ADRs\
+> **Updated:** 2026-09-17
 
 ## Purpose
 
-Architecture principles guide technical decisions. When evaluating trade-offs, refer to these principles. They complement the [Product Principles](../00-product/product-principles.md).
+Keep Variable LMS simple to understand, secure to operate and practical to evolve.
 
----
+1. Organize a modular monolith around business ownership. Private implementation and explicit interfaces matter more than a named architecture fashion.
+2. Use local transactions for local invariants. Do not introduce eventual consistency or distributed infrastructure without a concrete requirement.
+3. Permit efficient, owned integration reads; prevent arbitrary cross-module writes. A join is not a microservice boundary violation in a monolith.
+4. Separate distribution from application topology. Customer-controlled OCI deployment works for one application or later extracted services.
+5. Enforce authorization, organization integrity, capacity and history preservation with constraints and tests wherever possible.
+6. Persist work whose loss would violate an acknowledged outcome. In-memory events alone do not provide delivery guarantees.
+7. Measure real workloads before adding caches, Redis, brokers or extracted services. NativeAOT is not assumed.
+8. Keep upgrades, backups, restore and observability part of the product's engineering definition of done.
+9. Preserve accepted product rules. Put feature-local uncertainty in the question register and keep unrelated work moving.
 
-## Principles
+## Open questions
 
-> **Draft:** These are starting principles to be refined when the tech stack and architecture are selected.
+See [current questions](../00-product/open-questions.md). No named-pattern or language selection remains open.
 
-### 1. Keep it simple until complexity is justified
+## Related documents
 
-Start with the simplest architecture that works. Add layers, services, or abstractions only when there is a clear need.
-
-### 2. Separate concerns clearly
-
-Keep data access, business logic, and presentation in distinct layers. This makes the system easier to test, modify, and reason about.
-
-### 3. Design for change
-
-Favor designs that are easy to modify over designs that are optimal for current assumptions. Requirements will evolve.
-
-### 4. Security is not optional
-
-Authentication, authorization, and data protection must be built into the architecture, not bolted on later.
-
-### 5. Observe and measure
-
-Build in logging, monitoring, and metrics from the start. If you cannot measure it, you cannot improve it.
-
-### 6. Automate the build and deploy pipeline
-
-Continuous integration and deployment should be set up early and kept working throughout the project.
-
-### 7. Data integrity first
-
-Protect user data and learning records. Prefer safe defaults, validate inputs, and handle edge cases explicitly.
-
----
-
-## Open Questions
-
-- Should we adopt a specific architectural pattern (hexagonal, clean architecture, etc.)?
-- What is the testing strategy (unit, integration, e2e)?
-- How will database migrations be managed?
-
----
-
-## Related Documents
-
-- [Product Principles](../00-product/product-principles.md)
-- [Decisions](./decisions.md)
+[ADRs](decisions.md) · [Module boundaries](module-boundaries.md) · [Invariants](implementation-invariants.md) · [Product principles](../00-product/product-principles.md)

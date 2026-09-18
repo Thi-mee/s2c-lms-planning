@@ -1,53 +1,34 @@
-# Product Vision
+# Variable LMS product vision
 
-> **Status:** Draft  
-> **Last Updated:** June 2026
+> **Status:** Confirmed baseline\
+> **Authority:** Canonical — product direction\
+> **Updated:** 2026-09-17
 
----
+## Purpose
 
-## What We Are Building
+Describe the product and its intended customers. Variable LMS is a product of **Variable**; its initial deployment serves **s2c's internal training**.
 
-We are building a **Learning Management System (LMS)** designed to be **self-hosted (white-labeled)** by organizations, starting with our own organization (**s2c**). It enables organizations to create, deliver, and manage educational courses, modules, and lessons, while tracking learner progress, hosting discussions, and evaluating performance.
+## Product
 
-While the app defaults to single-tenant self-hosting, it uses an environment-based configuration design so the same codebase can be deployed in managed SaaS mode if required.
+Organizations create reusable text-based courses and deliver them through scheduled cohorts with human coordination and facilitation. Learners receive assigned courses, discuss material, take quizzes, track their own progress and receive completion certificates. Organizations control membership, learning operations and licensed active-learner capacity.
 
----
+Customer-owned infrastructure and data are central to the product. Variable distributes versioned OCI images and deployment packages, and customers decide when to apply upgrades. On-premises, private-cloud and assisted-operation installations use the same application images. A future vendor-hosted offering is possible, but its tenancy, provisioning and operating model are not an MVP commitment.
 
-## Why We Are Building It
+The first implementation uses .NET 10 LTS / ASP.NET Core, a modular monolith, React + Vite, and PostgreSQL. Redis is optional. The original Go/single-binary wording is superseded by [accepted decisions D2–D4](accepted-decisions.md).
 
-Existing LMS products are often over-engineered, expensive, or hard to deploy in a private, data-sovereign manner. By building a high-performance Go + React platform that compiles into a single binary, we allow organizations to manage their own data and infrastructure with absolute ease. 
+## Success
 
-For monetization, we will control access using a yearly support fee combined with a seat-based license keyed to the number of active students created on the platform.
+- s2c can operate the complete assigned-cohort learning path on infrastructure it controls.
+- Account and resource authorization, learner capacity and learning history remain correct under concurrent operations.
+- Customers can install, back up, upgrade and recover using versioned documented artifacts.
+- Learners can use the responsive web experience to complete text courses and receive reliable credentials.
 
----
+The earlier 1,000–10,000 active-learner aspiration remains a planning input, not a measured concurrency promise. Concrete hardware, workload and latency/recovery targets are [Q61](open-questions.md#q61). Designing for possible growth does not require services or a 100,000-learner launch commitment.
 
-## Vision Statement
+## Open questions
 
-Provide a high-performance, single-binary, extensible learning management system that empowers organizations to run their own education infrastructure, protect their data, and deliver modern e-learning without deployment overhead.
+[Q61](open-questions.md#q61) (operational targets); [Q63](open-questions.md#q63) (first-release support matrix). These do not reopen the accepted architecture.
 
----
+## Related documents
 
-## What Success Looks Like
-
-- **Self-Hosting Ease:** An organization can launch the LMS using a single compiled binary linked to a Postgres database.
-- **Licensing Control:** Organizations manage their active learner seat limits based on their yearly subscription tier.
-- **User Engagement:** Learners can consume content (Rich Text, Required Readings, and Lesson Notes), ask questions in Course and Module Forums, and take practice or graded quizzes.
-- **Tracking & Extensibility:** Instructors and admins can track learner progress. Content formats are structured for future domain expansions (e.g., video streaming or SCORM/xAPI integrations in later phases).
-- **Scale Confidence:** The application smoothly supports 1,000 to 10,000 active learners on baseline hardware, with an architecture designed to scale to 100,000.
-
----
-
-## Open Questions
-
-- What is the specific VM image format (AMI, GCP image, etc.) we should prioritize first for simplified cloud deployments?
-- What are the precise seat tier thresholds for the yearly license (e.g., 500 seats, 1,000 seats, 5,000 seats)?
-- Should cohort-level analytics (e.g., cohort completion rates) be exposed to the Learning Coordinator, or just to Organization Managers?
-
----
-
-## Related Documents
-
-- [Goals](./goals.md)
-- [Target Users](./target-users.md)
-- [Product Principles](./product-principles.md)
-- [Open Questions](./open-questions.md)
+[Accepted decisions](accepted-decisions.md) · [MVP](../07-roadmap/mvp.md) · [Goals](goals.md) · [Target users](target-users.md)

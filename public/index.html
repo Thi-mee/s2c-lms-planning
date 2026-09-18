@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>{const s=localStorage.getItem('color-scheme');if(s){document.querySelector('meta[name="color-scheme"]').content=s;}}</script>
+<title>Variable LMS — Learning, in your environment.</title>
+<meta name="description" content="Variable LMS is a product of Variable, initially serving s2c’s internal training. Organizations run cohort-based training in infrastructure they control.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+<div class="wrap topbar__inner">
+<a class="brand" href="index.html">
+<span class="brand__mark">V</span> Variable&nbsp;LMS</a>
+<nav class="nav" aria-label="Primary">
+<a href="index.html" aria-current="page">Overview</a>
+<a href="prd.html">Product</a>
+<a href="scope.html">Scope</a>
+<a href="architecture.html">Architecture</a>
+<button class="toggle" data-theme-toggle aria-pressed="false" title="Toggle theme">
+<span data-label>Light</span>
+</button>
+</nav>
+</div>
+</header>
+<main id="main">
+<section class="hero">
+<div class="wrap reveal">
+<p class="eyebrow">Variable LMS · Product dossier · Reviewed 17 September 2026</p>
+<h1>Learning, in your environment.</h1>
+<p class="lede">Variable LMS is a product of Variable, initially serving s2c’s internal training. Organizations run cohort-based training in infrastructure they control.</p>
+<div class="callout">
+<span class="lbl">Derived documentation</span>
+<p>This summary is not an implementation specification. Canonical repository sources govern: <a href="../docs/00-product/vision.md">Vision</a> · <a href="../docs/00-product/accepted-decisions.md">Accepted decisions</a> · <a href="../docs/07-roadmap/mvp.md">MVP</a>. Application implementation has not started.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">The product</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Courses become guided learning.</h2>
+</div>
+<p>Authors publish text-based courses. Authorized staff schedule cohorts and assign Learners. Facilitators support discussion; Learners read required content, complete graded assessments and earn a course certificate.</p>
+<div class="grid grid--2">
+<div class="card">
+<h3>One account, explicit roles</h3>
+<p>Learner, Course Author, Cohort Coordinator, Learning Facilitator, Administrator and Organization Manager can be combined as a role set. Resource grants define course/cohort authority.</p>
+</div>
+<div class="card">
+<h3>Each enrollment is a learning run</h3>
+<p>Progress, attempts and completion belong to the run. Re-enrollment starts fresh and preserves earlier history.</p>
+</div>
+<div class="card">
+<h3>Precise learner capacity</h3>
+<p>One unique active account with Learner entitlement consumes one seat. Pending, inactive and staff-only accounts consume none.</p>
+</div>
+<div class="card">
+<h3>Stable course credentials</h3>
+<p>Automatic issuance remains once per user/course, even if the learner later completes another run. The fixed PDF uses snapshotted display data.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Distribution</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Customer-controlled releases.</h2>
+</div>
+<p>Variable publishes versioned OCI images and deployment packages. Customers pull and apply releases on their own schedule, without requiring interactive vendor access. Compose supports a small installation; Helm is the intended Kubernetes packaging path when supported.</p>
+<p>The same images can serve on-premises, private cloud, assisted operation and future vendor hosting. Hosted tenancy and billing are separate future decisions.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Status</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Ready for foundational implementation.</h2>
+</div>
+<p>The September baseline settles the architecture, authorization, licensing and learning-record identity. Feature-local questions remain explicit. No application is implemented yet and no production capacity is claimed.</p>
+<div class="cta">
+<a class="btn btn--primary" href="../docs/07-roadmap/implementation-plan.md">Implementation sequence</a>
+<a class="btn" href="scope.html">Scope and gates</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="foot">
+<div class="wrap foot__inner">
+<span>Variable LMS · By Variable · s2c is the first customer</span>
+<span>
+<a href="../docs/README.md">Source authority</a> · <a href="../docs/07-roadmap/readiness.md">Readiness</a>
+</span>
+</div>
+</footer>
+<script src="theme.js">
+</script>
+</body>
+</html>
