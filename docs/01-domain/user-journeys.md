@@ -1,107 +1,43 @@
-# User Journeys
+# User journeys
 
-> **Status:** Draft  
-> **Last Updated:** June 2026
-
----
+> **Status:** Confirmed baseline with feature gates\
+> **Authority:** Supporting — derives from core concepts and feature specifications\
+> **Updated:** 2026-09-17
 
 ## Purpose
 
-This document describes the key user journeys through the LMS. Each journey maps a user's path from a starting point to a goal. These journeys inform feature requirements and screen design.
+Describe the actual assigned-cohort MVP. Former public browsing/self-enrollment, sequential unlocking and publication approval journeys are superseded.
 
----
+## Establish the installation
 
-## Learner Journeys
+Operator applies the versioned deployment package, configures PostgreSQL/storage/SMTP/license/key material and establishes the first Administrator through controlled bootstrap. The Administrator manages organization users and explicitly grants permitted roles; the installation preserves a usable Administrator.
 
-### Journey: Discover and enroll in a course
+## Author and run a course
 
-1. Learner visits the platform
-2. Browses or searches available courses
-3. Views course details (description, syllabus, instructor, reviews)
-4. Enrolls in the course
-5. Receives confirmation
+A Course Author creates a draft course with one ownership grant, ordered modules, lessons/required flags/readings and quizzes. They preview content, validate requirements and publish directly. A Coordinator chooses a published course from the staff library, configures a cohort window and eligible staff, and assigns learners. Facilitators support delivery, not account provisioning or cohort membership management.
 
-### Journey: Complete a lesson
+## Invite, activate and assign
 
-1. Learner opens their enrolled course
-2. Navigates to the current module and lesson
-3. Consumes the lesson content (reads, watches, interacts)
-4. Marks the lesson as complete (or it auto-completes)
-5. Progress updates
-6. Next lesson becomes available
+Manager/Admin invites an account with only permitted roles. Pending invitation consumes zero seats. Acceptance sets credentials and activates with an atomic learner-capacity check. Activation failure at capacity leaves the account pending and retryable. Staff-only activation consumes zero. Coordinator/Manager/Admin assigns an active Learner to a cohort, creating a distinct Enrollment.
 
-### Journey: Complete a course
+## Learn and complete
 
-1. Learner completes all required lessons and assessments
-2. Course progress reaches 100%
-3. System verifies completion requirements
-4. Learner receives notification of completion
-5. Certificate is issued (if applicable)
+Learner signs in and sees assigned cohorts, opens a run's course, reads required content and takes graded quizzes. Lessons are ordered but do not unlock sequentially. The accepted completion formula evaluates only this enrollment's evidence. The run completes; the system issues a certificate only if the user/course does not already have one, and records a durable completion email. The learner can view run history and their credential.
 
-### Journey: Take an assessment
+Reading acknowledgement, attempt timing and post-window access are feature gates; see [questions](../00-product/open-questions.md). Do not invent automatic page-view completion in the UI.
 
-1. Learner reaches an assessment in the course
-2. Reads instructions
-3. Completes the assessment (quiz, assignment, etc.)
-4. Submits the assessment
-5. Receives score/feedback (immediately or after grading)
+## Support and discussion
 
----
+Learner posts a Markdown question in their cohort's course/module forum. Authorized staff reply and moderate; the original poster receives a reply email. Staff view only authorized run records. Authorized reset restores quiz allowance through an auditable action without deleting prior submissions.
 
-## Instructor Journeys
+## Deactivate or re-enroll
 
-### Journey: Create a course
+Manager/Admin deactivates an eligible account through authorized user management: access/session validity ends, learner capacity is released, and records remain. Reactivation rechecks learner capacity. Genuine re-enrollment creates a new run with fresh progress and attempts; previous evidence remains historical. A cohort transfer is not a generic edit and needs its own decision if introduced.
 
-1. Instructor accesses course creation
-2. Defines course title, description, and metadata
-3. Creates modules within the course
-4. Adds lessons to each module
-5. Uploads or creates content for each lesson
-6. Optionally adds assessments
-7. Sets completion requirements
-8. Previews the course
-9. Publishes the course
+## Open questions
 
-### Journey: Monitor learner progress
+[Q68–Q75 and Q79](../00-product/open-questions.md) gate the relevant exceptional flows. No catalog, notification-center or approval workflow is included in MVP.
 
-1. Instructor opens a course dashboard
-2. Views enrollment numbers and completion rates
-3. Drills into individual learner progress
-4. Identifies struggling learners
-5. Optionally sends feedback or messages
+## Related documents
 
----
-
-## Administrator Journeys
-
-### Journey: Onboard a new user
-
-1. Admin accesses user management
-2. Creates a new user account (or invites via email)
-3. Assigns a role (learner, instructor, etc.)
-4. Optionally assigns the user to an organization
-5. User receives invitation and sets up their account
-
-### Journey: Manage platform content
-
-1. Admin reviews all courses on the platform
-2. Approves, suspends, or removes courses
-3. Manages course categories or tags
-4. Reviews platform-wide analytics
-
----
-
-## Open Questions
-
-- What is the onboarding experience for a brand-new learner?
-- Can learners bookmark or save courses for later?
-- Do instructors need an approval workflow before publishing?
-- How does an organization manager assign courses to their team?
-
----
-
-## Related Documents
-
-- [Target Users](../00-product/target-users.md)
-- [Roles and Permissions](./roles-and-permissions.md)
-- [Core Concepts](./core-concepts.md)
+[Core concepts](core-concepts.md) · [Role policy](roles-and-permissions.md) · [Features](../02-features/README.md) · [Navigation](../05-frontend/navigation.md)

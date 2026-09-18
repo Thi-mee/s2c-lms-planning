@@ -1,53 +1,31 @@
-# API Design
+# API design
 
-> **Last Updated:** June 2026
+> **Status:** Confirmed engineering baseline; endpoint contracts will be added per implementation slice\
+> **Authority:** Supporting conventions; feature behavior and role policy remain canonical\
+> **Updated:** 2026-09-18
 
----
+## Purpose and current contracts
 
-## Purpose
+[License contract](license-contract.md) is the external LMS/issuer boundary. [Identity foundation](identity-foundation.md) documents the first implemented HTTP slice. There is no generated OpenAPI yet. Define each further HTTP contract alongside its vertical slice using the [template](api-template.md); when OpenAPI is added, generate/validate it from the implementation rather than maintaining a divergent parallel API.
 
-This folder contains planning documents for the LMS API surface. These are **not** OpenAPI specifications or implementation code — they are conceptual documents that describe what APIs the system will need.
+## First-party API conventions
 
-Actual API implementation will happen during the engineering phase, informed by these documents.
+Use same-origin HTTP/JSON over TLS between the React/Vite application and ASP.NET Core host. Cookie sessions, CSRF protection, current account/grant validation and explicit organization/resource checks are mandatory. There is no JWT/GraphQL stack decision outstanding. Public routes are limited to necessary authentication/token/bootstrap surfaces under their own controls, not a public learning catalog or certificate verifier.
 
----
+Use explicit commands for activation, role delegation, enrollment, quiz submission/reset and completion-related actions rather than generic unrestricted CRUD. The authenticated context supplies organization identity; a body/header organization ID is never authority. Reject attempts to alter immutable parent/run fields. Resource checks and write preconditions occur in the use-case transaction, not solely middleware.
 
-## How to Add an API Document
+DTOs expose the minimum needed data; never serialize ORM graphs, answer keys, password/token material or another cohort's data. Use consistent typed error codes, field errors and request IDs; redact internals. Choose exact status mappings/pagination conventions during the first slice. Lists are bounded and deterministically ordered. Search remains scoped to authorized courses/cohorts/forums; PostgreSQL filtering/indexes suffice initially.
 
-1. Copy `api-template.md` to a new file with a descriptive name (e.g., `course-api.md`)
-2. Fill in the template sections
-3. Use `TBD` for sections that are not yet defined
-4. Add the API to the index below
-5. Cross-link to related features and entities
+## Retry and compatibility
 
----
+Mutating requests that create externally meaningful outcomes carry scoped idempotency/request keys with payload comparison: retries return the same result, while reusing a key for a different command payload is rejected. Database constraints remain necessary for semantic uniqueness, even when two requests use different keys. Apply to invitations, enrollment, submissions, resets and issuance-triggering workflows; natural idempotent updates need no generic framework.
 
-## API Index
+The first-party frontend ships with the backend release. Future public API/version support is a separate commitment. Persisted work and license documents already have explicit version handling because they survive process upgrades.
 
-| API Area | Status | File |
-|----------|--------|------|
-| *(No APIs documented yet)* | — | — |
+## Validation and open questions
 
-APIs will be defined as features are specified and the architecture direction is established.
+Test negative organization/resource scope, stale/deactivated sessions, forbidden payload fields, CSRF, capacity/allowance races and retries for each slice. Read the feature's links to the [question register](../00-product/open-questions.md); endpoint names and error shapes are engineering decisions, not new product blockers.
 
----
+## Related documents
 
-## Design Considerations
-
-> **Open Question:** See [Q13](../00-product/open-questions.md) — Tech stack decisions will influence API design.
-
-Pending decisions:
-
-- REST vs. GraphQL vs. hybrid
-- Authentication mechanism (JWT, sessions, OAuth)
-- Versioning strategy
-- Pagination approach
-- Error response format
-
----
-
-## Related Documents
-
-- [API Template](./api-template.md)
-- [Architecture Decisions](../06-architecture/decisions.md)
-- [Features](../02-features/README.md)
+[Features](../02-features/README.md) · [Roles](../01-domain/roles-and-permissions.md) · [Security](../06-architecture/security-and-identity.md) · [Module boundaries](../06-architecture/module-boundaries.md)

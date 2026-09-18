@@ -1,46 +1,15 @@
-# Frontend
+# Frontend guidance
 
-> **Last Updated:** June 2026
-
----
+> **Status:** Confirmed routing\
+> **Authority:** Supporting\
+> **Updated:** 2026-09-18
 
 ## Purpose
 
-This folder contains planning documents for the LMS user interface. These describe what screens are needed, how navigation works, and what the user sees — without implementing actual frontend code.
+Guide the React/Vite first-party web application. [Navigation and walking-skeleton screens](navigation.md) is the target UI map. The login and authenticated account shell are implemented in `src/web`; see [local development](../06-architecture/local-development.md) to run them. Other learning/administration screens remain planned. The separate [public dossier](../../public/README.md) is documentation, not a frontend prototype or product requirement source.
 
----
+Add a [screen specification](screen-template.md) when a concrete implementation slice needs detail. Link it to canonical features and permissions instead of copying policy into a role-specific layout. Product behavior lives in domain/features; rendering, route names and components are engineering decisions.
 
-## How to Add a Screen Document
+## Open questions and related documents
 
-1. Copy `screen-template.md` to a new file with a descriptive name (e.g., `course-detail-screen.md`)
-2. Fill in the template sections
-3. Use `TBD` for sections that are not yet defined
-4. Add the screen to the index below
-5. Cross-link to related features and user journeys
-
----
-
-## Screen Index
-
-| Screen | User Type | Status | File |
-|--------|-----------|--------|------|
-| *(No screens documented yet)* | — | — | — |
-
-Screens will be defined as features are specified and user journeys are refined.
-
----
-
-## Design Considerations
-
-- Responsive web-first (mobile app TBD)
-- Accessibility should be considered from the start
-- Consistent navigation patterns across user types
-- Role-based interface (learners, instructors, and admins may see different layouts)
-
----
-
-## Related Documents
-
-- [Screen Template](./screen-template.md)
-- [Navigation](./navigation.md)
-- [User Journeys](../01-domain/user-journeys.md)
+[Question register](../00-product/open-questions.md) · [API guidance](../04-api-design/README.md) · [User journeys](../01-domain/user-journeys.md) · [ADR-8](../06-architecture/decisions.md#adr-8-frontend--react-spa-vite-no-ssr)

@@ -1,68 +1,30 @@
-# Target Users
+# Target users
 
-> **Status:** Draft  
-> **Last Updated:** June 2026
-
----
+> **Status:** Confirmed baseline\
+> **Authority:** Canonical — actors\
+> **Updated:** 2026-09-17
 
 ## Purpose
 
-This document identifies the types of users the LMS is being designed for. User definitions will influence features, permissions, and interface design.
+Identify Variable LMS actors without duplicating the permission matrix. One person may hold multiple account roles and resource grants.
 
----
+| Actor | Responsibility |
+|---|---|
+| Learner | Takes assigned courses through enrollments; reads, participates, takes quizzes, views own progress and credentials |
+| Course Author | Creates reusable course content and assessments; authorship is course-scoped |
+| Cohort Coordinator | Launches/configures cohorts, assigns learners and oversees delivery; cohort-scoped |
+| Learning Facilitator | Supports learners, moderates discussions and monitors progress; cohort-scoped |
+| Organization Manager | Manages ordinary organizational users/operational roles, resource assignments, branding and capacity visibility; cannot delegate privileged security roles |
+| Administrator | Manages organizational security and system settings through explicitly authorized actions; no cross-customer authority |
+| Installation operator | Controls deployment, initial bootstrap, backups and recovery; host access is outside the application role model |
+| Variable vendor system | Issues signed licenses and owns commercial workflows outside the LMS |
 
-## Identified User Types
+s2c is the first customer organization. Organization Managers do not issue licenses, edit signed capacity or process subscriptions inside the LMS. Staff need the Learner entitlement and their own enrollment when participating as learners.
 
-> **Draft:** These are initial user types. They may be renamed, merged, or expanded.
+## Open questions
 
-### Learner
+No unresolved role-set or Coordinator/Facilitator naming decision. Specific preview/review behavior is [Q73](open-questions.md#q73); commercial future roles are outside current scope.
 
-- The primary consumer of educational content
-- Enrolls in courses, completes lessons, takes assessments
-- Tracks their own progress
-- May receive certificates upon completion
+## Related documents
 
-### Instructor
-
-- Creates and manages course content
-- May monitor learner progress within their courses
-- May grade assessments or provide feedback
-- Could be a subject-matter expert, teacher, or trainer
-
-### Administrator
-
-- Manages the platform itself
-- Creates and manages user accounts
-- Configures system settings
-- Views platform-wide analytics and reports
-- May manage courses, categories, or organizational structure
-
-### Organization Manager
-
-- Represents the client organization (tenant) buying or deploying the platform
-- Manages the subscription, licensing, and student seat limits (assigned vs. available seats)
-- Registers or invites learners and instructors within their organization
-- Assigns courses to learners and monitors organizational learning reports
-
-### Learning Coordinator
-
-- Oversees specific course **cohorts** (especially for pre-designed, trainerless courses)
-- Has complete access to course content to assist learners
-- Facilitates the **course forum** and module forums to support cohort interaction, answer questions, and drive engagement
-- Monitors progress and completion metrics for their assigned cohort members
-
----
-
-## Open Questions
-
-- Should we support self-registration for learners where the Organization Manager only approves them?
-- Can a single user account hold multiple roles (e.g., an Instructor who is also enrolled as a Learner)?
-- Will there be a read-only Auditor role for external compliance reviewers?
-
----
-
-## Related Documents
-
-- [Roles and Permissions](../01-domain/roles-and-permissions.md)
-- [User Journeys](../01-domain/user-journeys.md)
-- [Vision](./vision.md)
+[Role authority](../01-domain/roles-and-permissions.md) · [Glossary](../01-domain/glossary.md) · [Journeys](../01-domain/user-journeys.md)

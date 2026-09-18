@@ -1,125 +1,43 @@
-# S2C Learning Management System — Planning Repository
+# Variable LMS
 
-> **Status:** Brainstorming & Planning Phase  
-> **Last Updated:** June 2026  
-> **Purpose:** Product documentation, feature definition, and system design
+> **Status:** Identity foundation implemented; subsequent LMS slices planned\
+> **Last updated:** 2026-09-18
 
----
+## Purpose
 
-## What This Repository Is
+Variable LMS is a product of **Variable**. Its initial deployment serves **s2c's internal training**; s2c is the first customer organization, not the vendor or the product name.
 
-This is the **planning and documentation repository** for a new Learning Management System (LMS).
+This repository is the living home of product truth, architectural decisions, implementation, tests, deployment artifacts, and operations guidance. Code and specifications stay together so a behavior change can be reviewed with its rationale and tests.
 
-It contains product thinking, feature definitions, domain models, architecture decisions, and research — all in structured markdown.
+## Start here
 
-**This repository does not contain application code.** It is the foundation that will guide future implementation.
+- [Documentation source map](docs/README.md) — precedence and task-specific reading routes.
+- [Run the application and tests](docs/06-architecture/local-development.md) — local setup, configuration and implemented scope.
+- [Identity HTTP contract](docs/04-api-design/identity-foundation.md) — current endpoints and safeguards.
+- [Accepted decisions](docs/00-product/accepted-decisions.md) — the authoritative September baseline.
+- [MVP](docs/07-roadmap/mvp.md) — included and deferred product behavior.
+- [ADR log](docs/06-architecture/decisions.md) — each architecture proposal reviewed independently.
+- [Readiness](docs/07-roadmap/readiness.md) and [implementation sequence](docs/07-roadmap/implementation-plan.md) — safe starting point and feature gates.
+- [AGENTS.md](AGENTS.md) — shared contributor/agent entrypoint; vendor-specific files only point here.
 
----
+## Architecture and distribution
 
-## Current Phase
+.NET 10 LTS / ASP.NET Core modular monolith, React + Vite, PostgreSQL, and versioned OCI images. Redis is optional and requires a demonstrated need. Application topology is independent of deployment topology. Versioned Compose packages are the small-deployment baseline; Helm is the intended Kubernetes packaging path when supported. Customers choose when to apply releases. Container distribution does not imply a multi-tenant SaaS product.
 
-The LMS product is currently in the **brainstorming and planning phase**.
+## Repository shape
 
-We are:
+`docs/00-product` through `docs/08-research` hold specifications and decisions. `src/backend/` contains the ASP.NET Core host and private Identity module; `src/web/` is the React application. `tests/` contains PostgreSQL integration and architecture tests; browser tests live in `src/web/tests/`. `deploy/compose/` and `scripts/dev.sh` run the isolated development database and operator commands. `.github/workflows/ci.yml` builds and checks the foundation.
 
-- Defining what we are building and for whom
-- Exploring LMS domain concepts and workflows
-- Documenting features at a conceptual level
-- Identifying open questions and unknowns
-- Preparing the groundwork for structured implementation phases
+`public/` remains a derived documentation dossier, **not** the LMS frontend. Production OCI release packages are planned, not yet delivered. The license contract lives in `docs/04-api-design/`; a separate vendor control-plane repository will own issuance and billing.
 
-We are **not yet** building the application, writing backend/frontend code, or finalizing database schemas.
+## Implemented so far
 
----
+One-time organization/Administrator bootstrap, login/logout, persistent revocable sessions, organization isolation, dedicated Administrator grant/revoke and account deactivation commands, transactional audit, explicit locked migrations and a responsive authenticated shell. Course authoring is the next slice; licensing, invitations and learning workflows remain planned. This is a development foundation, not a customer-ready release.
 
-## Repository Structure
+## Contribution workflow
 
-```text
-/
-├── README.md               # This file — project overview
-├── CLAUDE.md               # Instructions for Claude AI agents
-├── AGENTS.md               # Instructions for all AI agents
-├── docs/
-│   ├── 00-product/         # Vision, goals, users, principles
-│   ├── 01-domain/          # Glossary, roles, user journeys, core concepts
-│   ├── 02-features/        # Feature specifications (uses template)
-│   ├── 03-data-model/      # Conceptual entity definitions (uses template)
-│   ├── 04-api-design/      # API planning documents (uses template)
-│   ├── 05-frontend/        # Screen definitions and navigation
-│   ├── 06-architecture/    # Architecture decisions and principles
-│   ├── 07-roadmap/         # MVP definition and phased rollout
-│   └── 08-research/        # Industry research and references
-```
+Read the applicable canonical documents, change the owning specification and implementation in the same review, add behavior-focused validation, and refresh affected derived material. Keep historical decisions visibly superseded. Product uncertainties belong in [open questions](docs/00-product/open-questions.md), not silent defaults. Use kebab-case for documentation filenames and the existing templates when useful.
 
-Each folder contains a `README.md` explaining its purpose and contents.
+## Open questions and distribution terms
 
----
-
-## How Documentation Is Organized
-
-| Folder | Purpose | When to Use |
-|--------|---------|-------------|
-| `00-product` | High-level product direction | Defining what we're building and why |
-| `01-domain` | Domain language and concepts | Establishing shared vocabulary |
-| `02-features` | Individual feature specs | Detailing a specific capability |
-| `03-data-model` | Conceptual data entities | Thinking about what data exists |
-| `04-api-design` | API surface planning | Defining how systems will communicate |
-| `05-frontend` | Screen and navigation planning | Designing user-facing interfaces |
-| `06-architecture` | Technical architecture | Recording architectural decisions |
-| `07-roadmap` | Build order and phases | Planning what to build when |
-| `08-research` | Industry research and notes | Collecting external insights |
-
----
-
-## How to Contribute
-
-### Adding a new feature
-
-1. Copy `docs/02-features/feature-template.md`
-2. Create a new file in `docs/02-features/` with a descriptive name (e.g., `course-enrollment.md`)
-3. Fill in the template sections — leave sections as `TBD` if not yet defined
-4. Link related documents where applicable
-
-### Updating existing documentation
-
-1. Edit the relevant file directly
-2. Preserve existing decisions unless explicitly revisiting them
-3. Mark changed decisions with a note about why they changed
-4. Update the `Status` field if present
-
-### Adding research
-
-1. Add notes to `docs/08-research/` or create a new file for a specific topic
-2. Cite sources where possible
-3. Separate observations from recommendations
-
----
-
-## For AI Agents
-
-If you are an AI agent working with this repository:
-
-1. **Read first:** Start with `AGENTS.md` (or `CLAUDE.md` if you are Claude)
-2. **Understand the phase:** We are in planning, not implementation
-3. **Respect decisions:** Documented decisions are intentional
-4. **Use templates:** Follow the templates in `02-features`, `03-data-model`, and `04-api-design`
-5. **Track questions:** Add unknowns to `docs/00-product/open-questions.md`
-
----
-
-## What Should NOT Be Added Yet
-
-- Backend application code
-- Frontend application code
-- Database migrations or ORM models
-- CI/CD pipelines
-- Docker or deployment configurations
-- Package management files (package.json, requirements.txt, etc.)
-
-These will be added when the product direction is mature and implementation begins.
-
----
-
-## License
-
-TBD — to be determined before implementation phase.
+Foundational decisions are resolved. Feature and release gates remain explicitly tracked in the question register. Product source/distribution licensing terms are not selected by this technical baseline; resolve [Q78](docs/00-product/open-questions.md#q78) before external distribution. Do not infer an open-source license from the repository layout.

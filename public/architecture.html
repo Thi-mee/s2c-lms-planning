@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>{const s=localStorage.getItem('color-scheme');if(s){document.querySelector('meta[name="color-scheme"]').content=s;}}</script>
+<title>Variable LMS — One application, clear boundaries.</title>
+<meta name="description" content="A .NET 10 LTS modular monolith with React + Vite and PostgreSQL, released as versioned OCI images.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+<div class="wrap topbar__inner">
+<a class="brand" href="index.html">
+<span class="brand__mark">V</span> Variable&nbsp;LMS</a>
+<nav class="nav" aria-label="Primary">
+<a href="index.html">Overview</a>
+<a href="prd.html">Product</a>
+<a href="scope.html">Scope</a>
+<a href="architecture.html" aria-current="page">Architecture</a>
+<button class="toggle" data-theme-toggle aria-pressed="false" title="Toggle theme">
+<span data-label>Light</span>
+</button>
+</nav>
+</div>
+</header>
+<main id="main">
+<section class="hero">
+<div class="wrap reveal">
+<p class="eyebrow">Variable LMS · Product dossier · Reviewed 18 September 2026</p>
+<h1>One application, clear boundaries.</h1>
+<p class="lede">A .NET 10 LTS modular monolith with React + Vite and PostgreSQL, released as versioned OCI images.</p>
+<div class="callout">
+<span class="lbl">Derived documentation</span>
+<p>This summary is not an implementation specification. Canonical repository sources govern: <a href="../docs/06-architecture/decisions.md">ADR log</a> · <a href="../docs/06-architecture/module-boundaries.md">Modules</a> · <a href="../docs/06-architecture/release-and-operations.md">Distribution and recovery</a> · <a href="../docs/06-architecture/implementation-invariants.md">Invariants</a>. The identity foundation is implemented; learning features remain planned. See the <a href="../docs/06-architecture/local-development.md">current implementation and local setup</a>.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Structure</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Business capabilities own their state.</h2>
+</div>
+<p>Identity &amp; Organization, Licensing, Course Authoring, Enrollment &amp; Cohorts, Assessment, Progress &amp; Certification, Discussion and Notifications have explicit public interfaces and private implementations. Only owning modules mutate state.</p>
+<p>Deliberate read-only relational joins and local transactions are allowed. No module-to-module HTTP, database-per-module mandate or speculative broker is introduced. Extraction later requires real scaling, reliability or ownership need and an explicit consistency redesign.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Integrity</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Make important outcomes durable.</h2>
+</div>
+<div class="grid grid--2">
+<div class="card">
+<h3>Identity and isolation</h3>
+<p>One organization per initial installation; organization ownership and parent/run consistency on records. Opaque revocable cookie sessions use PostgreSQL initially. RLS is not mandatory.</p>
+</div>
+<div class="card">
+<h3>Transactions and retries</h3>
+<p>Required audit, state and work intent commit together. Workers lease persisted work and retry. Business uniqueness prevents duplicate runs/certificates; email is not promised exactly once.</p>
+</div>
+<div class="card">
+<h3>Migration safety</h3>
+<p>The deployment package invokes migrations with separate DDL credentials. The web runtime has restricted rights and checks schema compatibility; a lock alone does not make live upgrades safe.</p>
+</div>
+<div class="card">
+<h3>Release and restore</h3>
+<p>Immutable release tags/digests, compatible versioned packages, release notes, supported upgrade paths and backups of database, files, license/configuration and keys. Customer chooses upgrade timing.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">ADR review</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Every proposal was reviewed independently.</h2>
+</div>
+<p>ADR-1 is superseded. ADR-4 and ADR-8 are accepted. ADR-2, 3, 5, 6, 7, 9, 10, 11 and 12 are accepted with modification. New ADR-13 establishes atomic state and durable effects.</p>
+<p>Modified decisions remove mandatory Redis/RLS, automatic web-startup DDL, blanket join bans, assumed NativeAOT and automatic SaaS capability. No whole existing ADR remains Proposed; unsupported future clauses are explicitly deferred rather than accepted by association.</p>
+</div>
+</div>
+</section>
+<section class="section">
+<div class="wrap section__grid">
+<div class="section__aside">
+<div class="section__num">
+</div>
+<p class="k">Packaging</p>
+</div>
+<div>
+<div class="section__head">
+<h2>Deployment topology is independent.</h2>
+</div>
+<p>Small deployments use a versioned Compose package. A supported Kubernetes path uses versioned Helm packaging. Future extracted services add independently versioned images to the package. Neither OCI delivery nor Helm implies a SaaS product.</p>
+<p>Redis and object storage require actual need. The conventional managed .NET runtime is the baseline. The separate Variable issuer signs versioned licenses; the LMS validates them offline without implementing billing or mandatory telemetry.</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="foot">
+<div class="wrap foot__inner">
+<span>Variable LMS · By Variable · s2c is the first customer</span>
+<span>
+<a href="../docs/README.md">Source authority</a> · <a href="../docs/07-roadmap/readiness.md">Readiness</a>
+</span>
+</div>
+</footer>
+<script src="theme.js">
+</script>
+</body>
+</html>

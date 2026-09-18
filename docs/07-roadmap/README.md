@@ -1,32 +1,16 @@
-# Roadmap
+# Roadmap and readiness
 
-> **Last Updated:** June 2026
+> **Status:** Current index\
+> **Authority:** Supporting routing\
+> **Updated:** 2026-09-17
 
----
+## Purpose and routes
 
-## Purpose
+- [MVP](mvp.md): canonical included/deferred behavior.
+- [Readiness](readiness.md): consolidation findings, ADR dispositions and remaining gates.
+- [Implementation sequence](implementation-plan.md): dependency-aware vertical slices and validation.
+- [Phases](phases.md): broad stages without invented dates or extension promises.
 
-This folder contains the build plan for the LMS, including MVP definition and phased rollout. The roadmap should evolve as the product direction becomes clearer.
+## Open questions and related documents
 
----
-
-## Contents
-
-| Document | Purpose |
-|----------|---------|
-| [MVP](./mvp.md) | Minimum Viable Product definition |
-| [Phases](./phases.md) | Phased implementation plan |
-
----
-
-## Current State
-
-The MVP has not been defined yet. The product is still in the brainstorming phase. Once core features are specified and prioritized, the MVP and phase boundaries will be established.
-
----
-
-## Related Documents
-
-- [Product Goals](../00-product/goals.md)
-- [Open Questions](../00-product/open-questions.md)
-- [Features](../02-features/README.md)
+[Question register](../00-product/open-questions.md) is the sole unresolved-decision register. [Source map](../README.md) determines which document governs when material disagrees.

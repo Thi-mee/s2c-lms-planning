@@ -1,0 +1,39 @@
+using Variable.Identity;
+using Xunit;
+
+namespace Variable.IntegrationTests;
+
+public sealed class RolePolicyTests
+{
+    public static IEnumerable<object[]> Matrix()
+    {
+        foreach (var actor in Enum.GetValues<AccountRole>())
+        foreach (var target in Enum.GetValues<AccountRole>())
+        {
+            var expected = target != AccountRole.Administrator && (actor == AccountRole.Administrator
+                || (actor == AccountRole.OrganizationManager && target is not AccountRole.OrganizationManager));
+            yield return [actor, target, expected];
+        }
+    }
+
+    [Theory, MemberData(nameof(Matrix))]
+    public void Ordinary_role_grants_use_the_explicit_matrix(AccountRole actor, AccountRole target, bool expected) =>
+        Assert.Equal(expected, RoleGrantPolicy.CanGrantOrRevoke([actor], target));
+
+    [Fact]
+    public void Combining_operational_roles_never_confers_security_delegation()
+    {
+        AccountRole[] roles = [AccountRole.CourseAuthor, AccountRole.CohortCoordinator, AccountRole.LearningFacilitator, AccountRole.Learner];
+        Assert.All(Enum.GetValues<AccountRole>(), target => Assert.False(RoleGrantPolicy.CanGrantOrRevoke(roles, target)));
+        Assert.False(RoleGrantPolicy.CanGrantOrRevoke([AccountRole.Administrator], (AccountRole)999));
+    }
+
+    [Fact]
+    public void Module_implementation_is_not_a_public_dependency_surface()
+    {
+        var assembly = typeof(RoleGrantPolicy).Assembly;
+        Assert.DoesNotContain(assembly.GetExportedTypes(), type => type.Namespace?.Contains("Persistence", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(assembly.GetReferencedAssemblies(), referenced => referenced.Name == "Variable.App");
+        Assert.All(assembly.GetTypes().Where(type => type.Name is "IdentityDb" or "IdentityService" or "UserAccount" or "PostgresTicketStore"), type => Assert.False(type.IsPublic));
+    }
+}

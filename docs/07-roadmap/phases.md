@@ -1,69 +1,22 @@
-# Implementation Phases
+# Delivery phases
 
-> **Status:** Not Yet Defined  
-> **Last Updated:** June 2026
-
----
+> **Status:** Supporting roadmap; no calendar commitment\
+> **Authority:** Supporting, derived from MVP and implementation sequence\
+> **Updated:** 2026-09-17
 
 ## Purpose
 
-This document will define the phased implementation plan for the LMS. Phases organize features into ordered groups that can be built, tested, and shipped incrementally.
+Use the [dependency-aware implementation sequence](implementation-plan.md) as the build plan. The earlier undefined phases and promised SCORM “Phase 2” are superseded.
 
----
+1. **Baseline established:** authoritative product/domain rules, independently reviewed ADRs, source routing and local decision gates. Completed by the September documentation consolidation; no application implementation claimed.
+2. **Walking skeleton:** bootstrap through first course credential across real persistence, backend and frontend boundaries, with negative/security/retry tests.
+3. **MVP completion and release qualification:** remaining agreed features, closed feature/release gates, supported versioned Compose package, migration/backup/restore evidence and operational guidance.
+4. **Evidence-driven extensions:** evaluate only demonstrated needs. Helm support, hosted operation, transfers, standards integration, commercial extensions or service extraction have no assigned delivery date or guaranteed phase.
 
-## Phases
+## Open questions
 
-> **Not yet defined.** Phases will be specified once the MVP is established and features are prioritized.
+Team staffing and deadlines are program inputs; estimate after the first slices reveal delivery cost. [Q63](../00-product/open-questions.md#q63) controls the first supported deployment platforms. Other product questions remain in the central register.
 
-### Phase 0: Planning (Current)
+## Related documents
 
-- Define product vision and goals
-- Identify target users
-- Document core domain concepts
-- Specify initial features
-- Define MVP
-- Make key architecture decisions
-
-### Phase 1: MVP
-
-- TBD — see [MVP](./mvp.md)
-
-### Phase 2: Core Extensions
-
-- TBD — features that expand on the MVP
-
-### Phase 3: Advanced Features
-
-- TBD — features that add depth and polish
-
-### Phase 4: Scale and Optimize
-
-- TBD — performance, scalability, advanced integrations
-
----
-
-## Phase Criteria
-
-Each phase should:
-
-- Deliver a coherent set of features
-- Be independently deployable
-- Be testable end-to-end
-- Build on the previous phase
-- Have clear success criteria
-
----
-
-## Open Questions
-
-- How long should each phase take?
-- What is the team size and composition?
-- Are there external deadlines driving the timeline?
-
----
-
-## Related Documents
-
-- [MVP](./mvp.md)
-- [Product Goals](../00-product/goals.md)
-- [Features](../02-features/README.md)
+[MVP](mvp.md) · [Readiness](readiness.md) · [Question register](../00-product/open-questions.md)

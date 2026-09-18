@@ -1,0 +1,20 @@
+name: variable-lms-dev
+services:
+  database:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: variable_lms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: variable-local-operator-only
+    ports:
+      - "127.0.0.1:54637:5432"
+    volumes:
+      - variable-database:/var/lib/postgresql/data
+      - ./init-dev.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d variable_lms"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  variable-database:

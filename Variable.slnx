@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/backend/Variable.App/Variable.App.csproj" />
+    <Project Path="src/backend/Variable.Identity/Variable.Identity.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Variable.IntegrationTests/Variable.IntegrationTests.csproj" />
+  </Folder>
+</Solution>
